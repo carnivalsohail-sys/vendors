@@ -1278,8 +1278,18 @@ function parseWhatsApp(){
   const dimByRe = /^(\d+\.?\d*)\s*(?:by|x|BY|X)\s*(\d+\.?\d*)(?:\s*(FT\s*)?(HI|HIGH))?/i;
   // Dimension: "6 W 8 HI" or "6W 8HI"
   const dimWHRe = /^(\d+\.?\d*)\s*W\s+(\d+\.?\d*)\s*(FT\s*)?(HI|HIGH)?/i;
+  // Dimension: "16 W X 2 HI" — Width explicitly marked with W, then X separator
+  const dimWXRe = /^(\d+\.?\d*)\s*W\s*[X×x]\s*(\d+\.?\d*)(?:\s*(FT\s*)?(HI|HIGH))?/i;
   // Quantity prefix: "2 PCS SIDE PANELS", "4 PCS TABLE FRONT"
   const pcsRe = /^(\d+)\s*PCS\s+(.+)/i;
+
+  // Clean item names: strip noise like "..", "....*TAR YAAD SEY LANA", extra spaces
+  const cleanItemName = name => name
+    .replace(/\.{2,}.*/g, '')      // remove ".." and everything after it
+    .replace(/\*.*$/g, '')         // remove notes after *
+    .replace(/\s{2,}/g, ' ')      // collapse multiple spaces
+    .replace(/\s+[()]\s*/g, (m) => m.trim()) // tighten parentheses
+    .trim();
 
   const pushCurrent=()=>{
     if(currentItem&&currentItem.item&&currentItem.item.length>1){
@@ -1302,6 +1312,18 @@ function parseWhatsApp(){
       baseLocation=line;
       if(!document.getElementById('e_location').value.trim())
         document.getElementById('e_location').value=line;
+      continue;
+    }
+
+    // W X format: "16 W X 2 HI" (Width marked with W, then X separator)
+    const wxM=line.match(dimWXRe);
+    if(wxM){
+      const w=parseFloat(wxM[1]),h=parseFloat(wxM[2]);
+      if(currentItem&&currentItem.item){
+        currentItem.w=w;currentItem.h=h;
+        currentItem.total=w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        pushCurrent();
+      }
       continue;
     }
 
@@ -1333,7 +1355,7 @@ function parseWhatsApp(){
     const pcsM=line.match(pcsRe);
     if(pcsM){
       pushCurrent();
-      const itemName=pcsM[2].trim();
+      const itemName=cleanItemName(pcsM[2].trim());
       const matchedRate=findRate(itemName);
       currentItem={item:itemName.toUpperCase(),qty:parseInt(pcsM[1]),rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
       continue;
@@ -1342,8 +1364,11 @@ function parseWhatsApp(){
     // Plain text — treat as item name (skip very short or pure-number lines)
     if(line.length>=3 && !/^\d+$/.test(line)){
       pushCurrent();
-      const matchedRate=findRate(line);
-      currentItem={item:line.toUpperCase(),qty:1,rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
+      const cleanLine=cleanItemName(line);
+      if(cleanLine.length>=2){
+        const matchedRate=findRate(cleanLine);
+        currentItem={item:cleanLine.toUpperCase(),qty:1,rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
+      }
     }
   }
   pushCurrent();
@@ -1381,7 +1406,9 @@ function findRate(itemName){
     if(n.includes(r.item)||r.item.includes(n)) return r.rate;
   }
   if(/LED\s*WALL/i.test(n)) return 110;
-  if(/STAGE|RISER|PLATFORM/i.test(n)) return 30;
+  // Only match STAGE/RISER/PLATFORM if it's the PRIMARY item (first word),
+  // not just mentioned in passing like "SIDE WINGS OF STAGE"
+  if(/^(STAGE|RISER|PLATFORM)/i.test(n)) return 30;
   if(/TRANSPORT/i.test(n)) return 1000;
   return 17; // default flex rate
 }
