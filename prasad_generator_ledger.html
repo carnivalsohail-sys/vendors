@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PRASAD GENERATOR Vendor Ledger — Power Solutions</title>
+<title>PRASAD Vendor Ledger — Power Solutions</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -119,6 +119,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(251,19
 .form-group input:focus,.form-group select:focus{border-color:var(--accent)}
 .ew-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
 .ew-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px;align-items:end;margin-bottom:10px}
+.ew-5{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;align-items:end;margin-bottom:10px}
 
 /* ── ENTRY ROWS ── */
 .entry-row{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:11px}
@@ -157,7 +158,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(251,19
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
   .cards{grid-template-columns:1fr 1fr}
-  .ew-4{grid-template-columns:1fr 1fr}
+  .ew-4, .ew-5{grid-template-columns:1fr 1fr}
   .toolbar{flex-direction:column;align-items:stretch}
   .header-actions .btn span{display:none}
 }
@@ -178,7 +179,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(251,19
   <div class="logo">
     <div class="logo-icon">⚡</div>
     <div>
-      <div class="logo-text">PRASAD GENERATOR Vendor Ledger</div>
+      <div class="logo-text">GENERATOR Vendor Ledger</div>
       <div class="logo-sub">Power Solutions</div>
     </div>
   </div>
@@ -326,11 +327,12 @@ TRANSPORT"></textarea>
       <div class="fg"><label>Item *</label><input type="text" id="edit_item" placeholder="e.g. 25 KVA GENERATOR"></div>
       <div class="fg"><label>Rate Card</label><select id="edit_rcard" onchange="applyRateCardEdit()"><option value="">Select…</option></select></div>
     </div>
-    <div class="ew-4">
+    <div class="ew-5">
       <div class="fg"><label>KVA / LTR</label><input type="number" id="edit_kva" placeholder="Value" oninput="calcEdit()"></div>
       <div class="fg"><label>Qty / Days</label><input type="number" id="edit_qty" value="1" oninput="calcEdit()"></div>
       <div class="fg"><label>Rate (₹)</label><input type="number" id="edit_rate" value="7000" oninput="calcEdit()"></div>
-      <div class="fg"><label style="color:var(--red)">Diesel Paid (₹)</label><input type="number" id="edit_diesel" placeholder="Deduct" oninput="calcEdit()"></div>
+      <div class="fg"><label>Extra Hrs</label><input type="number" id="edit_extra" placeholder="Hrs" oninput="calcEdit()"></div>
+      <div class="fg"><label style="color:var(--red)">Diesel Paid</label><input type="number" id="edit_diesel" placeholder="Deduct" oninput="calcEdit()"></div>
     </div>
     <div class="fg">
       <label>Net Total (₹)</label>
@@ -442,7 +444,7 @@ TRANSPORT"></textarea>
 
 // CONSTANTS
 // ============================================================
-const STORE_VER = 'pras_gen_v1_';
+const STORE_VER = 'gen_v1_';
 let rowCounter = 0;
 
 const allMonths = [
@@ -731,7 +733,7 @@ window.currentDetailMk = mk;
       <td style="padding-left:22px;font-weight:500">${e.item}</td>
       <td class="amount" style="color:var(--muted)">${kvaStr}</td>
       <td class="amount" style="color:var(--muted)">${e.qty||'—'}</td>
-      <td class="amount" style="color:var(--muted)">${e.rate?'₹'+e.rate:'—'}</td>
+      <td class="amount" style="color:var(--muted)">${e.rate?'₹'+e.rate:'—'}${e.extra?'<br><span style="font-size:0.85em;color:var(--accent)">+'+e.extra+'h</span>':''}</td>
       <td class="amount" style="color:var(--red)">${e.diesel?'-₹'+e.diesel:'—'}</td>
       <td class="amount" style="font-weight:700">₹ ${fmt(e.total||0)}</td>
       <td>
@@ -915,10 +917,11 @@ function addRow(){
       <div class="fg"><label>Item Name *</label><input type="text" id="ri_item_${n}" placeholder="e.g. 25 KVA GENERATOR"></div>
       <div class="fg"><label>Rate Card</label><select id="ri_rcard_${n}" onchange="applyRateCard(${n})"></select></div>
     </div>
-    <div class="ew-4">
+    <div class="ew-5">
       <div class="fg"><label>KVA / LTR</label><input type="number" id="ri_kva_${n}" placeholder="Optional" oninput="calcRow(${n})"></div>
       <div class="fg"><label>Qty / Days</label><input type="number" id="ri_qty_${n}" value="1" oninput="calcRow(${n})"></div>
       <div class="fg"><label>Rate (₹)</label><input type="number" id="ri_rate_${n}" value="7000" oninput="calcRow(${n})"></div>
+      <div class="fg"><label>Extra Hrs</label><input type="number" id="ri_extra_${n}" placeholder="Hrs" oninput="calcRow(${n})"></div>
       <div class="fg"><label style="color:var(--red)">Diesel Paid</label><input type="number" id="ri_diesel_${n}" placeholder="Deduct ₹" oninput="calcRow(${n})"></div>
     </div>
     <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
@@ -937,9 +940,11 @@ function applyRateCard(n){const v=document.getElementById(`ri_rcard_${n}`).value
 function calcRow(n){
   const qty=parseFloat(document.getElementById(`ri_qty_${n}`)?.value)||1;
   const rate=parseFloat(document.getElementById(`ri_rate_${n}`)?.value)||0;
+  const extra=parseFloat(document.getElementById(`ri_extra_${n}`)?.value)||0;
   const diesel=parseFloat(document.getElementById(`ri_diesel_${n}`)?.value)||0;
   
-  const t = (qty * rate) - diesel; 
+  const extraCharge = extra * (rate * 0.10);
+  const t = (qty * rate) + extraCharge - diesel; 
   document.getElementById(`ri_total_${n}`).value=t;
   document.getElementById(`ri_pill_${n}`).textContent=`₹ ${fmt(t)}`;
   updateGrandTotal();
@@ -965,9 +970,10 @@ function saveEntries(){
     const kva=parseFloat(document.getElementById(`ri_kva_${n}`)?.value)||null;
     const qty=parseFloat(document.getElementById(`ri_qty_${n}`)?.value)||null;
     const rate=parseFloat(document.getElementById(`ri_rate_${n}`)?.value)||null;
+    const extra=parseFloat(document.getElementById(`ri_extra_${n}`)?.value)||0;
     const diesel=parseFloat(document.getElementById(`ri_diesel_${n}`)?.value)||0;
     if(!detailEntries[mk])detailEntries[mk]=[];
-    detailEntries[mk].push({date,location,item,kva,qty,rate,diesel,total});
+    detailEntries[mk].push({date,location,item,kva,qty,rate,extra,diesel,total});
     totalAdded+=total;added++;
   });
   if(!added){alert('Enter at least one item with total');return}
@@ -992,6 +998,7 @@ function editEntry(mk,idx){
   document.getElementById('edit_kva').value=e.kva||'';
   document.getElementById('edit_qty').value=e.qty||1;
   document.getElementById('edit_rate').value=e.rate||7000;
+  document.getElementById('edit_extra').value=e.extra||'';
   document.getElementById('edit_diesel').value=e.diesel||'';
   document.getElementById('edit_total').value=e.total||'';
   document.getElementById('edit_key').value=`${mk}|${idx}`;
@@ -1002,8 +1009,10 @@ function applyRateCardEdit(){const v=document.getElementById('edit_rcard').value
 function calcEdit(){
   const qty=parseFloat(document.getElementById('edit_qty').value)||1;
   const rate=parseFloat(document.getElementById('edit_rate').value)||0;
+  const extra=parseFloat(document.getElementById('edit_extra').value)||0;
   const diesel=parseFloat(document.getElementById('edit_diesel').value)||0;
-  const t=(qty*rate)-diesel;
+  const extraCharge=extra*(rate*0.10);
+  const t=(qty*rate)+extraCharge-diesel;
   document.getElementById('edit_total').value=t;
 }
 function saveEdit(){
@@ -1019,6 +1028,7 @@ function saveEdit(){
     kva:parseFloat(document.getElementById('edit_kva').value)||null,
     qty:parseFloat(document.getElementById('edit_qty').value)||null,
     rate:parseFloat(document.getElementById('edit_rate').value)||null,
+    extra:parseFloat(document.getElementById('edit_extra').value)||0,
     diesel:parseFloat(document.getElementById('edit_diesel').value)||0,
     total:parseFloat(document.getElementById('edit_total').value)||0
   };
@@ -1078,23 +1088,30 @@ function parseWhatsApp(){
   const raw=document.getElementById('whatsappText').value;
   if(!raw.trim()){alert('Paste a message first');return}
 
-  const lines=raw.split('\n').map(l=>l.replace(/\t+/g,' ').trim()).filter(Boolean);
+  const lines=raw.split('\n').map(l=>{
+    l = l.replace(/^\[.*?\]\s*.*?:/i, '');
+    l = l.replace(/^\d{1,2}\/\d{1,2}\/\d{2,4},.*?-.*?:/i, '');
+    return l.replace(/\t+/g,' ').trim();
+  }).filter(Boolean);
+
   const parsed=[];
   let currentItem=null;
   let baseLocation=document.getElementById('e_location').value.trim();
 
   const isEventMeta = l =>
     /^\d{1,2}[\.\s]*(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)/i.test(l) ||
-    /KAAM\s*START|EVENT\s*ON\s*:|CLIENT\s*DRY\s*RUN|SET\s*UP|RAAT|SUBAH/i.test(l) ||
-    /^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l);
+    /KAAM\s*START|EVENT\s*ON|DRY\s*RUN|SET\s*UP|RAAT|SUBAH|CHECKING|CONFIRM|READY|PLEASE|PLS|ASLAM/i.test(l) ||
+    /^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l) ||
+    /^[*_\-]+$/.test(l);
 
   const isLocation = l =>
     /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|BOUNDARY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ)/i.test(l) &&
     !/^\d/.test(l) &&
-    !/(KVA|GENSET|GENERATOR|DIESEL|LTR|TRANSPORT|OPERATOR)/i.test(l);
+    !/(KVA|KV|GENSET|GENERATOR|DIESEL|LTR|TRANSPORT|OPERATOR)/i.test(l);
 
   const pcsRe = /^(\d+)\s*(?:PCS|NOS)\s*(.+)?/i;
   const dieselRe = /(?:DIESEL|FUEL)\s*(?:EXTRA)?\s*(\d+)\s*(?:L|LTR|LITERS|LITRES)/i;
+  const kvaRe = /^(\d+)\s*KVA?/i;
 
   const pushCurrent=()=>{
     if(currentItem&&currentItem.item&&currentItem.item.length>1){
@@ -1109,10 +1126,14 @@ function parseWhatsApp(){
 
     if(isLocation(line)){
       pushCurrent();
-      baseLocation=line;
+      baseLocation=line.replace(/^FOR\s+/i, '');
       if(!document.getElementById('e_location').value.trim())
-        document.getElementById('e_location').value=line;
+        document.getElementById('e_location').value=baseLocation;
       continue;
+    }
+
+    if (/^GENERATOR\s*(VAN)?$/i.test(line)) {
+      continue; // Skip standalone "GENERATOR VAN" so "25 KV" creates the item on the next line
     }
 
     const dMatch = line.match(dieselRe);
@@ -1130,6 +1151,14 @@ function parseWhatsApp(){
       const itemName=(pcsM[2]||"GENERATOR").trim();
       const matchedRate=findRate(itemName);
       currentItem={item:itemName.toUpperCase(),qty:parseInt(pcsM[1]),rate:matchedRate,total:parseInt(pcsM[1])*matchedRate,diesel:0,location:baseLocation||null};
+      continue;
+    }
+
+    const kMatch = line.match(kvaRe);
+    if(kMatch){
+      pushCurrent();
+      const matchedRate=findRate(line);
+      currentItem={item:kMatch[1]+' KVA GENERATOR',qty:1,rate:matchedRate,total:matchedRate,diesel:0,location:baseLocation||null, kva:kMatch[1]};
       continue;
     }
 
@@ -1171,10 +1200,10 @@ function findRate(itemName){
   for(const r of rateCard){
     if(n.includes(r.item)||r.item.includes(n)) return r.rate;
   }
-  if(/125\s*KVA/i.test(n)) return 11000;
-  if(/65\s*KVA/i.test(n)) return 31600;
-  if(/30\s*KVA/i.test(n)) return 8000;
-  if(/25\s*KVA/i.test(n)) return 7000;
+  if(/125\s*KVA?/i.test(n)) return 11000;
+  if(/65\s*KVA?/i.test(n)) return 31600;
+  if(/30\s*KVA?/i.test(n)) return 8000;
+  if(/25\s*KVA?/i.test(n)) return 7000;
   if(/NOC|PWD/i.test(n)) return 4000;
   if(/EXTRA\s*HOUR/i.test(n)) return 1000;
   if(/TRANSPORT/i.test(n)) return 2000;
