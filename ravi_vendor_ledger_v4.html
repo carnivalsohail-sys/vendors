@@ -399,6 +399,37 @@ REGISTARTION BACK DROP
 </div>
 
 <!-- =========================================================
+     MODAL: EDIT MONTH
+========================================================== -->
+<div id="editMonthModal" class="modal-overlay">
+  <div class="modal pay-modal" style="width:480px">
+    <h3>✏️ Edit Month</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;font-family:'DM Mono',monospace" id="editMonthLabel"></div>
+    <input type="hidden" id="em_key">
+    <div class="form-group">
+      <label>Net Bill (Base ₹) — override if needed</label>
+      <input type="number" id="em_base" placeholder="0" oninput="recalcEditMonth()">
+    </div>
+    <div class="form-group">
+      <label>Total Paid (₹) — cumulative amount paid</label>
+      <input type="number" id="em_paid" placeholder="0">
+    </div>
+    <div class="form-group">
+      <label>Apply 18% GST?</label>
+      <select id="em_gst" onchange="recalcEditMonth()">
+        <option value="yes">Yes — include GST</option>
+        <option value="no">No — exclude GST</option>
+      </select>
+    </div>
+    <div style="background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.25);border-radius:9px;padding:12px;margin-bottom:4px;font-family:'DM Mono',monospace;font-size:13px" id="em_preview"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('editMonthModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditMonth()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
      MODAL: RATE CARD
 ========================================================== -->
 <div id="rateModal" class="modal-overlay">
@@ -813,7 +844,11 @@ function renderLedger(){
       <td class="amount ${balCls}">₹ ${fmt(Math.abs(bal))}</td>
       <td><span class="badge ${status}">${badge}</span></td>
       <td>
-        <button class="btn btn-success btn-sm" onclick="event.stopPropagation();quickPay('${m.key}')">+ Pay</button>
+        <div class="actions-cell" style="gap:5px;flex-wrap:nowrap">
+          <button class="btn btn-success btn-sm" onclick="event.stopPropagation();quickPay('${m.key}')" title="Record Payment">💳 Pay</button>
+          <button class="btn-icon" onclick="event.stopPropagation();openEditMonth('${m.key}')" title="Edit Month" style="color:var(--accent);border-color:rgba(240,165,0,.4)">✏️</button>
+          <button class="btn-icon" onclick="event.stopPropagation();deleteMonth('${m.key}')" title="Delete Entire Month" style="color:var(--red);border-color:rgba(224,92,58,.4)">🗑️</button>
+        </div>
       </td>
     </tr>`;
   });
@@ -831,7 +866,7 @@ function renderLedger(){
 
   document.getElementById('ledgerView').innerHTML=`<table>
     <thead><tr>
-      <th>Month</th><th>Net Bill</th><th>GST (18%)</th><th>Total Bill</th><th>Amount Paid</th><th>Balance</th><th>Status</th><th></th>
+      <th>Month</th><th>Net Bill</th><th>GST (18%)</th><th>Total Bill</th><th>Amount Paid</th><th>Balance</th><th>Status</th><th>Actions</th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
@@ -1211,15 +1246,18 @@ function deleteEntry(mk,idx){
   if(!entries||!entries[idx])return;
   const total=entries[idx].total;
   entries.splice(idx,1);
-  if(!entries.length)delete detailEntries[mk];
-  if(monthTotals[mk]){
-    monthTotals[mk].base-=total;
-    monthTotals[mk].gst = monthTotals[mk].applyGst ? monthTotals[mk].base * GST_RATE : 0;
+  if(!entries.length){
+    // No entries left — wipe the entire month completely
+    delete detailEntries[mk];
+    delete monthTotals[mk];
+  } else if(monthTotals[mk]){
+    monthTotals[mk].base -= total;
+    if(monthTotals[mk].base < 0) monthTotals[mk].base = 0;
+    monthTotals[mk].gst   = monthTotals[mk].applyGst ? monthTotals[mk].base * GST_RATE : 0;
     monthTotals[mk].total = monthTotals[mk].base + monthTotals[mk].gst;
-    if(monthTotals[mk].base<=0)delete monthTotals[mk];
   }
-  save('monthTotals',monthTotals);save('detailEntries',detailEntries);
-  renderCards();renderLedger();renderAllEntries();
+  save('monthTotals',monthTotals); save('detailEntries',detailEntries);
+  renderCards(); renderLedger(); renderAllEntries();
   if(document.getElementById('detailView').style.display!=='none'){
     if(detailEntries[mk]) showDetail(mk); else closeDetail();
   }
@@ -1243,6 +1281,62 @@ function savePayment(){
   save('monthTotals',monthTotals);
   closeModal('payModal');renderCards();renderLedger();
   alert(`✓ Payment ₹${fmt(amt)} recorded for ${allMonths.find(m=>m.key===mk)?.label||mk}`);
+}
+
+// ============================================================
+// EDIT / DELETE MONTH
+// ============================================================
+function openEditMonth(mk){
+  const m = allMonths.find(x=>x.key===mk);
+  const d = monthTotals[mk]||{base:0,gst:0,total:0,paid:0,applyGst:false};
+  document.getElementById('em_key').value   = mk;
+  document.getElementById('editMonthLabel').textContent = m?.label || mk;
+  document.getElementById('em_base').value  = d.base||0;
+  document.getElementById('em_paid').value  = d.paid||0;
+  document.getElementById('em_gst').value   = d.applyGst ? 'yes' : 'no';
+  recalcEditMonth();
+  document.getElementById('editMonthModal').classList.add('open');
+}
+function recalcEditMonth(){
+  const base  = parseFloat(document.getElementById('em_base').value)||0;
+  const gstOn = document.getElementById('em_gst').value === 'yes';
+  const gst   = gstOn ? base * GST_RATE : 0;
+  const total = base + gst;
+  document.getElementById('em_preview').innerHTML =
+    `Base: <span style="color:var(--text)">₹ ${fmt(base)}</span> &nbsp;|&nbsp; ` +
+    `GST: <span style="color:var(--purple)">₹ ${fmt(gst)}</span> &nbsp;|&nbsp; ` +
+    `Total: <span style="color:var(--accent)">₹ ${fmt(total)}</span>`;
+}
+function saveEditMonth(){
+  const mk    = document.getElementById('em_key').value;
+  const base  = parseFloat(document.getElementById('em_base').value)||0;
+  const paid  = parseFloat(document.getElementById('em_paid').value)||0;
+  const gstOn = document.getElementById('em_gst').value === 'yes';
+  const gst   = gstOn ? base * GST_RATE : 0;
+  const total = base + gst;
+  if(!monthTotals[mk]) monthTotals[mk] = {base:0,gst:0,total:0,paid:0,applyGst:false};
+  monthTotals[mk].base     = base;
+  monthTotals[mk].gst      = gst;
+  monthTotals[mk].total    = total;
+  monthTotals[mk].paid     = paid;
+  monthTotals[mk].applyGst = gstOn;
+  // If base is zeroed out and no entries exist, clean up
+  if(base <= 0 && !(detailEntries[mk]?.length)) delete monthTotals[mk];
+  save('monthTotals', monthTotals);
+  closeModal('editMonthModal');
+  renderCards(); renderLedger(); renderAllEntries();
+  alert(`✓ ${allMonths.find(m=>m.key===mk)?.label||mk} updated`);
+}
+function deleteMonth(mk){
+  const label = allMonths.find(m=>m.key===mk)?.label || mk;
+  const entryCount = (detailEntries[mk]||[]).length;
+  if(!confirm(`Delete entire month "${label}"?\n\nThis will permanently remove:\n• ${entryCount} line entr${entryCount===1?'y':'ies'}\n• All billing & payment data for this month\n\nThis cannot be undone.`)) return;
+  delete detailEntries[mk];
+  delete monthTotals[mk];
+  save('monthTotals', monthTotals);
+  save('detailEntries', detailEntries);
+  if(document.getElementById('detailView').style.display !== 'none') closeDetail();
+  renderCards(); renderLedger(); renderAllEntries();
 }
 
 // ============================================================
