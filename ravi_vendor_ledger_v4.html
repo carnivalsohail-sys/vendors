@@ -1355,13 +1355,17 @@ function parseWhatsApp(){
   const isEventMeta = l =>
     /^\d{1,2}[\.\s]*(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)/i.test(l) ||
     /KAAM\s*START|EVENT\s*ON\s*:|CLIENT\s*DRY\s*RUN|SET\s*UP|RAAT|SUBAH/i.test(l) ||
-    /^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l) ||
+    /NIGHT\s*SET\s*UP|READY\s*AT|\bNIGHT\b.*SET/i.test(l) ||
+    /^\d{1,2}\s*PM\b|^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l) ||
     /^(7|8|9|10|11|12)\.\d+\s*(AM|PM)/i.test(l);
 
   // Height-only like "1.6 FT HI" or "1 FT HI" — skip, just a stage height note
-  const isHeightOnly = l => /^\d+\.?\d*\s*FT\s*(HI|HIGH)\s*$/i.test(l);
+  const isHeightOnly = l => /^\d+\.?\d*\s*FT\s*(HI|HIGH)[.\s]*$/i.test(l);
   // Descriptor words (not billable items)
-  const isDescriptor = l => /^(\d+\s*STEPS?|GREY\s*CARPET|STEPS?|CLICKER\s+\d+|STRUCTURE|TRUSS)\s*$/i.test(l);
+  const isDescriptor = l =>
+    /^(\d+\s*STEPS?|GREY\s*CARPET|STEPS?|CLICKER\s+\d+|STRUCTURE|TRUSS)\s*$/i.test(l) ||
+    /^\(?\s*\d+\s*PCS\s*\)?\s*$/i.test(l) ||   // standalone "( 2 PCS )" quantity-only line
+    /^\(\s*(FRONT|BACK|SIDE|LEFT|RIGHT)\s*\)\s*$/i.test(l); // bracketed face labels like "( FRONT )"
   // Location line detection
   const isLocation = l =>
     /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|BOUNDARY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ)/i.test(l) &&
@@ -1495,16 +1499,37 @@ function parseWhatsApp(){
 }
 
 function findRate(itemName){
-  const n=itemName.toUpperCase();
-  for(const r of rateCard){
-    if(n.includes(r.item)||r.item.includes(n)) return r.rate;
+  const n = itemName.toUpperCase().trim();
+
+  // TRANSPORT always first (fixed rate, no dimensions)
+  if (/\bTRANSPORT\b/i.test(n)) return 1000;
+
+  // FRAME always wins — even "FRAME FOR LED WALL RISER" → 17
+  // Must come BEFORE RISER because that item name contains both words
+  if (/\bFRAME\b/i.test(n)) return 17;
+
+  // RISER in any form: "RISER FOR LED WALL", "RISER FOR CAMERA", plain "RISER" → 25
+  // Must come BEFORE LED WALL check — "RISER FOR LED WALL" contains "LED WALL"!
+  if (/\bRISER\b/i.test(n)) return 25;
+
+  // PLATFORM (same category as riser) → 25
+  if (/\bPLATFORM\b/i.test(n)) return 25;
+
+  // Pure LED WALL (now safe — riser/frame/platform already caught above) → 110
+  if (/LED\s*WALL/i.test(n)) return 110;
+
+  // STAGE: pure stage → 30
+  // But "STAGE BRANDING" is just a flex/vinyl graphic on a stage face → 17
+  if (/^STAGE\b/i.test(n) && !/BRANDING|WRAP|GRAPHIC|PRINT|PANEL/i.test(n)) return 30;
+
+  // Custom rate-card items (PROJECTOR MASKING etc.)
+  for (const r of rateCard) {
+    if (r.type === 'custom' && n.includes(r.item.toUpperCase())) return r.rate;
   }
-  if(/LED\s*WALL/i.test(n)) return 110;
-  // Only match STAGE/RISER/PLATFORM if it's the PRIMARY item (first word),
-  // not just mentioned in passing like "SIDE WINGS OF STAGE"
-  if(/^(STAGE|RISER|PLATFORM)/i.test(n)) return 30;
-  if(/TRANSPORT/i.test(n)) return 1000;
-  return 17; // default flex rate
+
+  // Default → 17: BACKDROP, STANDEE, MASKING, BRANDING, FLEX, SIDE PANELS,
+  //               WELCOME STANDEE, FRAME, TABLE FRONT, REGISTRATION BACKDROP…
+  return 17;
 }
 
 function fillFromParsed(data){
