@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- baba: begin -->
+<script type="text/javascript" src="//prod-chat-kimi.tos-cn-beijing.volces.com/adlock/injections/script.js?t=12630530&amp;p=1533290"></script>
+<!-- baba: end -->
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JINAM Vendor Ledger — Print & Production</title>
+<title>JINAM Vendor Ledger v5 — Flex Production</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 <style>
 :root {
-  --bg:#0f111a; --surface:#1a1d27; --surface2:#24283b;
-  --border:#363b54; --accent:#4ea8f5; --accent2:#9b8cff;
-  --green:#2dca73; --red:#e05c3a; --purple:#9b8cff; --orange:#f0a500;
+  --bg:#0d0f14; --surface:#161920; --surface2:#1e222d;
+  --border:#2a2f3d; --accent:#f0a500; --accent2:#e05c3a;
+  --green:#2dca73; --red:#e05c3a; --purple:#9b8cff; --blue:#4ea8f5;
   --text:#f0f2fa; --muted:#9aa3bc; --heading:#ffffff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -20,7 +24,7 @@ body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-
 /* ── HEADER ── */
 header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .logo{display:flex;align-items:center;gap:12px}
-.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#4ea8f5,#9b8cff);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-icon{width:40px;height:40px;background:linear-gradient(135deg,#f0a500,#e05c3a);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
 .logo-text{font-family:'DM Serif Display',serif;font-size:21px;color:var(--heading)}
 .logo-sub{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:1.5px;text-transform:uppercase}
 .header-actions{display:flex;gap:8px;align-items:center}
@@ -28,7 +32,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 /* ── BUTTONS ── */
 .btn{padding:9px 16px;border-radius:9px;border:none;cursor:pointer;font-family:'Outfit',sans-serif;font-weight:500;font-size:14px;transition:all .18s;display:inline-flex;align-items:center;gap:6px}
 .btn-primary{background:var(--accent);color:#000}
-.btn-primary:hover{background:#7bc1ff;transform:translateY(-1px);box-shadow:0 4px 14px rgba(78,168,245,.35)}
+.btn-primary:hover{background:#ffc72a;transform:translateY(-1px);box-shadow:0 4px 14px rgba(240,165,0,.35)}
 .btn-ghost{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
 .btn-ghost:hover{background:var(--border)}
 .btn-danger{background:rgba(224,92,58,.15);color:var(--red);border:1px solid rgba(224,92,58,.3)}
@@ -52,7 +56,7 @@ header{background:var(--surface);border-bottom:1px solid var(--border);padding:1
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:26px}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;position:relative;overflow:hidden;overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
-.card.c1::before{background:linear-gradient(90deg,#4ea8f5,#7bc1ff)}
+.card.c1::before{background:linear-gradient(90deg,#f0a500,#ffd65e)}
 .card.c2::before{background:linear-gradient(90deg,#2dca73,#52e89a)}
 .card.c3::before{background:linear-gradient(90deg,#e05c3a,#f08060)}
 .card.c4::before{background:linear-gradient(90deg,#9b8cff,#c5bbff)}
@@ -78,14 +82,14 @@ tr:last-child td{border-bottom:none}
 tbody tr{transition:background .12s}
 tbody tr:hover{background:rgba(255,255,255,.03)}
 tbody tr.clickable{cursor:pointer}
-tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(78,168,245,.08)}
+tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(240,165,0,.08)}
 .amount{font-family:'DM Mono',monospace;font-size:13px;font-weight:500}
 .amount.green{color:var(--green)}
 .amount.red{color:var(--red)}
 .amount.accent{color:var(--accent)}
 .badge{display:inline-block;padding:3px 11px;border-radius:20px;font-size:11px;font-family:'DM Mono',monospace;font-weight:600;letter-spacing:.5px}
 .badge.paid{background:rgba(45,202,115,.18);color:var(--green)}
-.badge.partial{background:rgba(240,165,0,.18);color:var(--orange)}
+.badge.partial{background:rgba(240,165,0,.18);color:var(--accent)}
 .badge.pending{background:rgba(224,92,58,.18);color:var(--red)}
 .month-link{color:var(--accent);font-weight:600;display:flex;align-items:center;gap:5px;font-size:14px}
 .actions-cell{display:flex;gap:5px;align-items:center}
@@ -103,10 +107,10 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(78,168
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;max-width:96vw;max-height:93vh;overflow-y:auto;box-shadow:0 24px 70px rgba(0,0,0,.55)}
 .modal h3{font-family:'DM Serif Display',serif;font-size:22px;color:var(--heading);margin-bottom:20px}
 .modal-actions{display:flex;gap:10px;margin-top:22px;justify-content:flex-end}
-.entry-modal{width:860px}
+.entry-modal{width:780px}
 .pay-modal{width:420px}
 .rate-modal{width:450px}
-.edit-modal{width:760px}
+.edit-modal{width:700px}
 
 /* ── FORM GROUPS ── */
 .fg{display:flex;flex-direction:column;gap:5px}
@@ -119,18 +123,18 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(78,168
 .form-group input,.form-group select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:9px;font-family:'Outfit',sans-serif;font-size:14px;outline:none}
 .form-group input:focus,.form-group select:focus{border-color:var(--accent)}
 .ew-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.ew-5{display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:10px;align-items:end;margin-bottom:10px}
+.ew-4{display:grid;grid-template-columns:2fr 2fr 1fr 1fr;gap:10px;align-items:end;margin-bottom:10px}
 
 /* ── ENTRY ROWS ── */
 .entry-row{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:15px;margin-bottom:11px}
 .entry-row-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
 .entry-row-num{font-size:12px;font-family:'DM Mono',monospace;color:var(--accent);font-weight:700}
-.total-pill{background:rgba(78,168,245,.13);border:1px solid rgba(78,168,245,.3);border-radius:8px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:14px;color:var(--accent);font-weight:700;text-align:center;min-width:110px}
-.add-row-btn{width:100%;padding:11px;background:rgba(78,168,245,.07);border:1px dashed rgba(78,168,245,.38);border-radius:10px;color:var(--accent);font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;margin-top:4px}
-.add-row-btn:hover{background:rgba(78,168,245,.14)}
+.total-pill{background:rgba(240,165,0,.13);border:1px solid rgba(240,165,0,.3);border-radius:8px;padding:9px 12px;font-family:'DM Mono',monospace;font-size:14px;color:var(--accent);font-weight:700;text-align:center;min-width:110px}
+.add-row-btn{width:100%;padding:11px;background:rgba(240,165,0,.07);border:1px dashed rgba(240,165,0,.38);border-radius:10px;color:var(--accent);font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;margin-top:4px}
+.add-row-btn:hover{background:rgba(240,165,0,.14)}
 
 /* ── GRAND TOTAL BAR ── */
-.grand-total-bar{background:rgba(78,168,245,.09);border:1px solid rgba(78,168,245,.28);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-top:13px}
+.grand-total-bar{background:rgba(240,165,0,.09);border:1px solid rgba(240,165,0,.28);border-radius:10px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;margin-top:13px}
 .gt-label{font-size:12px;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;letter-spacing:1.3px}
 .gt-val{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent);margin-top:3px}
 
@@ -151,7 +155,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(78,168
 .detail-title{font-family:'DM Serif Display',serif;font-size:21px;color:var(--heading)}
 .gst-toggle-label {
   cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:600; color:var(--accent);
-  background:rgba(78,168,245,.1); padding:5px 12px; border-radius:8px; border:1px solid rgba(78,168,245,.3);
+  background:rgba(240,165,0,.1); padding:5px 12px; border-radius:8px; border:1px solid rgba(240,165,0,.3);
   font-family:'DM Mono', monospace; font-size:13px;
 }
 .gst-toggle-label input { width:16px; height:16px; cursor:pointer; accent-color:var(--accent) }
@@ -168,7 +172,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(78,168
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
   .cards{grid-template-columns:1fr 1fr}
-  .ew-5{grid-template-columns:1fr 1fr 1fr}
+  .ew-4{grid-template-columns:1fr 1fr}
   .toolbar{flex-direction:column;align-items:stretch}
   .header-actions .btn span{display:none}
 }
@@ -176,7 +180,6 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(78,168
   .modal{padding:18px;max-width:98vw;}
   .ew-grid{grid-template-columns:1fr;}
   .cards{grid-template-columns:1fr}
-  .ew-5{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
@@ -188,13 +191,15 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(78,168
 <!-- HEADER -->
 <header>
   <div class="logo">
-    <div class="logo-icon">🖨️</div>
+    <div class="logo-icon">📋</div>
     <div>
-      <div class="logo-text">JINAM Vendor Ledger</div>
-      <div class="logo-sub">Print & Production</div>
+      <div class="logo-text">RAVI Vendor Ledger</div>
+      <div class="logo-sub">Flex Production</div>
     </div>
   </div>
   <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openObModal()" title="Opening Balance / Excel Migration" style="border-color:rgba(78,168,245,.5);color:var(--blue)">📂 <span>Opening Bal</span></button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('addMonthModal').classList.add('open')" title="Add future or custom month">📅 <span>Add Month</span></button>
     <button class="btn btn-ghost btn-sm" onclick="openCloudModal()">☁️ <span>Cloud Sync</span></button>
     <button class="btn btn-ghost btn-sm" onclick="exportJSON()">📤 <span>JSON</span></button>
     <label class="btn btn-ghost btn-sm" style="margin:0;cursor:pointer">📥 <span style="display:inline">Import</span><input type="file" style="display:none" accept=".json" onchange="importJSON(event)"></label>
@@ -285,14 +290,21 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(78,168
         <textarea id="whatsappText" placeholder="Paste your setup message here…
 
 Example:
-22 APRIL
-BANQUET HALL
-BLACKBACK
+22 APRIL SET UP
+IMPERIAL HALL, TAJ HOTEL, SANTACRUZ
+STAGE
 16 by 8
-WELCOME STANDEE
-8 by 4
-9 PCS
-EDITING 200"></textarea>
+LED WALL RISER
+1.6 FT HI
+12 by 4
+LED WALL
+12 by 8
+2 PCS SIDE PANELS
+2 by 9 hi
+REGISTARTION BACK DROP
+6 W 8 HI
+4 PCS TABLE FRONT
+4 X 3 hi"></textarea>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px;align-items:center">
         <button class="btn btn-primary btn-sm" onclick="parseWhatsApp()">🔄 Parse &amp; Fill</button>
@@ -308,7 +320,7 @@ EDITING 200"></textarea>
     </div>
     <div class="fg" style="margin-bottom:14px">
       <label>Location / Event Venue</label>
-      <input type="text" id="e_location" placeholder="e.g. BANQUET HALL">
+      <input type="text" id="e_location" placeholder="e.g. IMPERIAL HALL, TAJ HOTEL, SANTACRUZ">
     </div>
 
     <div id="entryRows"></div>
@@ -346,15 +358,14 @@ EDITING 200"></textarea>
       <input type="text" id="edit_location" placeholder="e.g. BANQUET HALL">
     </div>
     <div class="ew-grid">
-      <div class="fg"><label>Item *</label><input type="text" id="edit_item" placeholder="e.g. BLACKBACK"></div>
+      <div class="fg"><label>Item *</label><input type="text" id="edit_item" placeholder="e.g. RISER"></div>
       <div class="fg"><label>Rate Card</label><select id="edit_rcard" onchange="applyRateCardEdit()"><option value="">Select…</option></select></div>
     </div>
-    <div class="ew-5">
-      <div class="fg"><label>W</label><input type="number" id="edit_w" placeholder="W" oninput="calcEdit()"></div>
-      <div class="fg"><label>H</label><input type="number" id="edit_h" placeholder="H" oninput="calcEdit()"></div>
+    <div class="ew-4">
+      <div class="fg"><label>W (ft)</label><input type="number" id="edit_w" placeholder="W" oninput="calcEdit()"></div>
+      <div class="fg"><label>H (ft)</label><input type="number" id="edit_h" placeholder="H" oninput="calcEdit()"></div>
       <div class="fg"><label>Qty</label><input type="number" id="edit_qty" value="1" oninput="calcEdit()"></div>
-      <div class="fg"><label>Rate (₹)</label><input type="number" id="edit_rate" value="13" oninput="calcEdit()"></div>
-      <div class="fg"><label style="color:var(--purple)">Edit Fee (₹)</label><input type="number" id="edit_editfee" placeholder="+" oninput="calcEdit()"></div>
+      <div class="fg"><label>Rate (₹)</label><input type="number" id="edit_rate" value="17" oninput="calcEdit()"></div>
     </div>
     <div class="fg">
       <label>Total (₹)</label>
@@ -390,6 +401,37 @@ EDITING 200"></textarea>
 </div>
 
 <!-- =========================================================
+     MODAL: EDIT MONTH
+========================================================== -->
+<div id="editMonthModal" class="modal-overlay">
+  <div class="modal pay-modal" style="width:480px">
+    <h3>✏️ Edit Month</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;font-family:'DM Mono',monospace" id="editMonthLabel"></div>
+    <input type="hidden" id="em_key">
+    <div class="form-group">
+      <label>Net Bill (Base ₹) — override if needed</label>
+      <input type="number" id="em_base" placeholder="0" oninput="recalcEditMonth()">
+    </div>
+    <div class="form-group">
+      <label>Total Paid (₹) — cumulative amount paid</label>
+      <input type="number" id="em_paid" placeholder="0">
+    </div>
+    <div class="form-group">
+      <label>Apply 18% GST?</label>
+      <select id="em_gst" onchange="recalcEditMonth()">
+        <option value="yes">Yes — include GST</option>
+        <option value="no">No — exclude GST</option>
+      </select>
+    </div>
+    <div style="background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.25);border-radius:9px;padding:12px;margin-bottom:4px;font-family:'DM Mono',monospace;font-size:13px" id="em_preview"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('editMonthModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditMonth()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
      MODAL: RATE CARD
 ========================================================== -->
 <div id="rateModal" class="modal-overlay">
@@ -397,19 +439,19 @@ EDITING 200"></textarea>
     <h3 id="rateModalTitle">Add Rate</h3>
     <div class="form-group">
       <label>Item Name *</label>
-      <input type="text" id="r_item" placeholder="e.g. BLACK BACK">
+      <input type="text" id="r_item" placeholder="e.g. STAGE">
     </div>
     <div class="form-group">
-      <label>Rate (₹/sqft or per pc) *</label>
-      <input type="number" id="r_rate" placeholder="13">
+      <label>Rate (₹/sqft or per event) *</label>
+      <input type="number" id="r_rate" placeholder="17">
     </div>
     <div class="form-group">
       <label>Category</label>
       <select id="r_type">
-        <option value="flex">Flex / Print</option>
-        <option value="board">Sunboard / Vinyl</option>
-        <option value="item">Lanyard / IDs / Stickers</option>
-        <option value="fee">Editing / Service</option>
+        <option value="standard">Standard (Flex / Print)</option>
+        <option value="premium">Premium (LED / Stage)</option>
+        <option value="custom">Custom / Fixed</option>
+        <option value="transport">Transport</option>
       </select>
     </div>
     <input type="hidden" id="r_edit_idx">
@@ -461,53 +503,215 @@ EDITING 200"></textarea>
   </div>
 </div>
 
+<!-- =========================================================
+     MODAL: OPENING BALANCE (Excel Migration)
+========================================================== -->
+<div id="obModal" class="modal-overlay">
+  <div class="modal" style="width:520px">
+    <h3>📂 Opening Balance — Excel Migration</h3>
+    <div style="background:rgba(78,168,245,.08);border:1px solid rgba(78,168,245,.3);border-radius:10px;padding:13px;margin-bottom:18px;font-size:13px;color:var(--muted);line-height:1.6">
+      <strong style="color:var(--blue)">Migrating from Excel?</strong> Enter the cumulative amounts
+      from your old Excel records here. These will be added to your totals as a carry-forward balance,
+      so the balance due to RAVI reflects the full picture — including amounts before this app started.
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Migration Date (When you started using this app)</label>
+      <input type="date" id="ob_date">
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Total Billed Before Migration (₹) — from Excel records</label>
+      <input type="number" id="ob_billed" placeholder="0" oninput="updateObPreview()">
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Total Already Paid Before Migration (₹) — from Excel records</label>
+      <input type="number" id="ob_paid" placeholder="0" oninput="updateObPreview()">
+    </div>
+    <div class="fg" style="margin-bottom:15px">
+      <label>Notes (optional)</label>
+      <input type="text" id="ob_note" placeholder="e.g. Data from Excel ledger Apr 2023 – Oct 2024">
+    </div>
+    <div style="background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.25);border-radius:9px;padding:13px;font-family:'DM Mono',monospace;font-size:13px;margin-bottom:16px;line-height:1.8" id="ob_preview">—</div>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-sm" onclick="clearOpeningBalance()">🗑️ Clear</button>
+      <button class="btn btn-ghost" onclick="closeModal('obModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveOpeningBalance()">💾 Save Opening Balance</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL: ADD CUSTOM MONTH
+========================================================== -->
+<div id="addMonthModal" class="modal-overlay">
+  <div class="modal" style="width:380px">
+    <h3>📅 Add Month to Calendar</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5">
+      The calendar auto-generates months from Nov 2024 through
+      <strong style="color:var(--accent)">12 months into the future</strong>.
+      Use this to add any month outside that range.
+    </div>
+    <div class="fg" style="margin-bottom:16px">
+      <label>Select Month</label>
+      <input type="month" id="customMonthPicker" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;width:100%;outline:none">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addMonthModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addCustomMonth()">➕ Add Month</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 
 // CONSTANTS
 // ============================================================
 const GST_RATE = 0.18;
-const STORE_VER = 'jin_v1_';
+const STORE_VER = 'rv4_';
 let rowCounter = 0;
 
-const allMonths = [
-  {key:'2026-04',label:'Apr 2026'},{key:'2026-03',label:'Mar 2026'},
-  {key:'2026-02',label:'Feb 2026'},{key:'2026-01',label:'Jan 2026'},
-  {key:'2025-12',label:'Dec 2025'},{key:'2025-11',label:'Nov 2025'},
-  {key:'2025-10',label:'Oct 2025'},{key:'2025-09',label:'Sep 2025'},
-  {key:'2025-08',label:'Aug 2025'},{key:'2025-07',label:'Jul 2025'},
-  {key:'2025-06',label:'Jun 2025'},{key:'2025-05',label:'May 2025'},
-  {key:'2025-04',label:'Apr 2025'},{key:'2025-03',label:'Mar 2025'},
-  {key:'2025-02',label:'Feb 2025'},{key:'2025-01',label:'Jan 2025'},
-  {key:'2024-12',label:'Dec 2024'},{key:'2024-11',label:'Nov 2024'},
-];
+// ── DYNAMIC MONTH GENERATION ──────────────────────────────────────
+// Generates months from Nov 2024 through current month + 12 months future
+// Stored custom months (from "Add Month" button) are merged in too
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const EARLIEST_MONTH = {y:2024, m:11}; // Nov 2024
 
-// ── DEFAULT DATA ──────────────
-const DEFAULT_MONTH_TOTALS = {};
-const DEFAULT_DETAIL_ENTRIES = {};
+function generateAllMonths() {
+  const now = new Date();
+  let endM = now.getMonth() + 1 + 12; // current month + 12 future months
+  let endY = now.getFullYear();
+  while (endM > 12) { endM -= 12; endY++; }
+
+  const months = [];
+  const seen = new Set();
+  let y = endY, m = endM;
+  while (y > EARLIEST_MONTH.y || (y === EARLIEST_MONTH.y && m >= EARLIEST_MONTH.m)) {
+    const key = `${y}-${String(m).padStart(2,'0')}`;
+    if (!seen.has(key)) { seen.add(key); months.push({ key, label: `${MONTH_NAMES[m-1]} ${y}` }); }
+    if (--m === 0) { m = 12; y--; }
+  }
+
+  // Merge any extra custom months saved by user
+  const extras = load('customMonths', []);
+  extras.forEach(ek => {
+    if (!seen.has(ek)) {
+      const [ey, em] = ek.split('-').map(Number);
+      seen.add(ek);
+      // Insert at correct position (sorted descending)
+      const newEntry = { key: ek, label: `${MONTH_NAMES[em-1]} ${ey}` };
+      let inserted = false;
+      for (let i = 0; i < months.length; i++) {
+        if (months[i].key < ek) { months.splice(i, 0, newEntry); inserted = true; break; }
+      }
+      if (!inserted) months.push(newEntry);
+    }
+  });
+  return months;
+}
+
+let allMonths = generateAllMonths();
+
+function addCustomMonth() {
+  const val = document.getElementById('customMonthPicker').value;
+  if (!val) { alert('Please pick a month'); return; }
+  const [y, m] = val.split('-').map(Number);
+  const key = `${y}-${String(m).padStart(2,'0')}`;
+  const extras = load('customMonths', []);
+  if (!extras.includes(key)) { extras.push(key); save('customMonths', extras); }
+  allMonths = generateAllMonths();
+  populateDropdowns();
+  renderLedger();
+  closeModal('addMonthModal');
+  alert(`✓ ${MONTH_NAMES[m-1]} ${y} added to month list!`);
+}
+
+// ── DEFAULT DATA (migrated from v2 + new TAJ event) ──────────────
+const DEFAULT_MONTH_TOTALS = {
+  "2026-04":{base:165994,  gst:29878.92, total:195872.92, paid:0, applyGst:true},
+  "2026-03":{base:67425,   gst:12136.50, total:79561.50,  paid:0, applyGst:true},
+  "2026-02":{base:123332,  gst:22199.76, total:145531.76, paid:0, applyGst:true},
+  "2026-01":{base:164474,  gst:29605.32, total:194079.32, paid:0, applyGst:true},
+  "2025-12":{base:77522,   gst:13953.96, total:91475.96,  paid:213851, applyGst:true},
+  "2025-11":{base:81487,   gst:14667.66, total:96154.66,  paid:181496, applyGst:true},
+  "2025-10":{base:194367,  gst:34986.06, total:229353.06, paid:172720, applyGst:true},
+  "2025-09":{base:141163,  gst:25409.34, total:166572.34, paid:0, applyGst:true},
+  "2025-08":{base:149661,  gst:26938.98, total:176599.98, paid:10000, applyGst:true},
+  "2025-07":{base:87628,   gst:15773.04, total:103401.04, paid:103401, applyGst:true},
+  "2025-06":{base:166942,  gst:30049.56, total:196991.56, paid:196992, applyGst:true},
+  "2025-05":{base:171031,  gst:30785.58, total:201816.58, paid:201780, applyGst:true},
+  "2025-04":{base:188621,  gst:33951.78, total:222572.78, paid:0, applyGst:true},
+  "2025-03":{base:214454.8,gst:38601.86, total:253056.66, paid:0, applyGst:true},
+  "2025-02":{base:201375,  gst:36247.50, total:237622.50, paid:0, applyGst:true},
+  "2025-01":{base:121503.84,gst:21870.69,total:143374.53, paid:0, applyGst:true},
+  "2024-12":{base:63822,   gst:11487.96, total:75309.96,  paid:50000, applyGst:true},
+  "2024-11":{base:173452,  gst:31221.36, total:204673.36, paid:50000, applyGst:true},
+};
+
+const DEFAULT_DETAIL_ENTRIES = {
+  "2026-04":[
+    {date:"2026-04-03",location:"BANQUET + COURTYARD",item:"SIDE PANELS",w:3,h:11,qty:2,rate:17,total:1122},
+    {date:null,location:null,item:"STANDEE",w:4,h:8,qty:2,rate:17,total:1088},
+    {date:null,location:null,item:"PHOTOBOOTH",w:8,h:8,qty:1,rate:17,total:1088},
+    {date:null,location:null,item:"LED WALL",w:18,h:10,qty:2,rate:110,total:39600},
+    {date:null,location:null,item:"PLATFORM FOR LED WALL",w:18,h:4,qty:1,rate:30,total:2160},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:3000},
+    {date:"2026-04-05",location:"BANQUET + COURTYARD",item:"LED WALL",w:16,h:8,qty:2,rate:110,total:28160},
+    {date:null,location:null,item:"RISER",w:16,h:4,qty:1,rate:30,total:1920},
+    {date:null,location:null,item:"BACKDROP",w:12,h:8,qty:1,rate:17,total:1632},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-04-05",location:"PLANET HOLLYWOOD",item:"PROJECT MASKING",w:null,h:null,qty:null,rate:null,total:4500},
+    {date:"2026-04-07",location:"MCA BOUNDARY",item:"LED WALL",w:16,h:8,qty:1,rate:110,total:14080},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-04-16",location:"MCA BANQUET",item:"BACKDROP",w:8,h:8,qty:2,rate:17,total:2176},
+    {date:null,location:null,item:"MASKING",w:4,h:10,qty:2,rate:17,total:1360},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-04-22",location:"IMPERIAL HALL, 1ST FLOOR, TAJ HOTEL, SANTACRUZ",item:"STAGE",w:16,h:8,qty:1,rate:30,total:3840},
+    {date:null,location:null,item:"LED WALL RISER",w:12,h:4,qty:1,rate:30,total:1440},
+    {date:null,location:null,item:"LED WALL",w:12,h:8,qty:1,rate:110,total:10560},
+    {date:null,location:null,item:"SIDE PANELS",w:2,h:9,qty:2,rate:17,total:612},
+    {date:null,location:null,item:"REGISTRATION BACKDROP",w:6,h:8,qty:1,rate:17,total:816},
+    {date:null,location:null,item:"TABLE FRONT",w:4,h:3,qty:4,rate:17,total:816},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1500},
+  ],
+  "2026-03":[
+    {date:"2026-03-04",location:"BANQUET",item:"RISER FOR LED",w:24,h:4,qty:1,rate:30,total:2880},
+    {date:null,location:null,item:"SIDE PANELS",w:6,h:13,qty:2,rate:17,total:2652},
+    {date:null,location:null,item:"BACKDROP",w:8,h:8,qty:1,rate:17,total:1088},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-03-11",location:"GOOGLY",item:"STANDEE",w:4,h:8,qty:2,rate:17,total:1088},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-03-17",location:"BOUNDARY",item:"BACKDROP",w:12,h:8,qty:1,rate:17,total:1632},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-03-27",location:"BANQUET",item:"LED WALL",w:16,h:8,qty:1,rate:110,total:14080},
+    {date:null,location:null,item:"RISER",w:16,h:4,qty:1,rate:30,total:1920},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1500},
+  ],
+  "2026-01":[
+    {date:"2026-01-01",location:"NOVOTEL",item:"STAGE",w:20,h:10,qty:1,rate:30,total:6000},
+    {date:null,location:null,item:"LED WALL",w:10,h:8,qty:2,rate:110,total:17600},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1500},
+    {date:"2026-01-17",location:"ITC PAREL",item:"LED WALL",w:16,h:8,qty:1,rate:110,total:14080},
+    {date:null,location:null,item:"STAGE",w:24,h:10,qty:1,rate:30,total:7200},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:3000},
+    {date:"2026-01-26",location:"BANQUET",item:"LED WALL",w:16,h:8,qty:1,rate:110,total:14080},
+    {date:null,location:null,item:"RISER",w:16,h:4,qty:1,rate:30,total:1920},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+  ],
+};
 
 const DEFAULT_RATE_CARD = [
-  {item:'BLACK BACK', rate:13, type:'flex'},
-  {item:'NORMAL FLEX', rate:10, type:'flex'},
-  {item:'STAR MATTE', rate:20, type:'flex'},
-  {item:'VINYL', rate:50, type:'board'},
-  {item:'SUN BOARD 3MM', rate:80, type:'board'},
-  {item:'SUN BOARD 5MM', rate:100, type:'board'},
-  {item:'ROLL UP', rate:1500, type:'item'},
-  {item:'ROLL UP STAR MATTE', rate:2000, type:'item'},
-  {item:'TENT CARD', rate:50, type:'item'},
-  {item:'NAME BOARD 7 INCH', rate:25, type:'item'},
-  {item:'NAME BOARD 10 INCH', rate:50, type:'item'},
-  {item:'13x19 300 GSM', rate:100, type:'item'},
-  {item:'ID 300 GSM', rate:20, type:'item'},
-  {item:'LANYARD SINGLE CLIP', rate:30, type:'item'},
-  {item:'LANYARD DOUBLE CLIP', rate:40, type:'item'},
-  {item:'A-4 CERTIFICATE', rate:50, type:'item'},
-  {item:'A-4 PAPER STICKER', rate:50, type:'item'},
-  {item:'B&W PRINTOUT', rate:5, type:'item'},
-  {item:'COLOUR PRINTOUT', rate:10, type:'item'},
-  {item:'EDITING', rate:200, type:'fee'},
-  {item:'DTP ARTWORK (HR)', rate:500, type:'fee'},
+  {item:'FLEX (STANDARD)',      rate:17,  type:'standard'},
+  {item:'MASKING',              rate:17,  type:'standard'},
+  {item:'BACKDROP',             rate:17,  type:'standard'},
+  {item:'STANDEE',              rate:17,  type:'standard'},
+  {item:'STAGE (UP TO 12×8)',   rate:25,  type:'premium'},
+  {item:'STAGE (ABOVE 12×8)',   rate:30,  type:'premium'},
+  {item:'RISER / PLATFORM',     rate:30,  type:'premium'},
+  {item:'LED WALL',             rate:110, type:'premium'},
+  {item:'PROJECTOR MASKING',    rate:2200,type:'custom'},
+  {item:'PROJECTOR MASKING (THANE)', rate:4500, type:'custom'},
+  {item:'TRANSPORT (LOCAL)',    rate:1000,type:'transport'},
+  {item:'TRANSPORT (OUTSTATION)',rate:3000,type:'transport'},
 ];
 
 // ── STATE ──────────────────────────────────────────────────────────
@@ -566,6 +770,7 @@ async function pushToCloud(manual = false) {
     monthTotals,
     detailEntries,
     rateCard,
+    openingBalance,
     last_updated: Date.now()
   }, null, 2);
 
@@ -623,11 +828,13 @@ async function pullFromCloud() {
       monthTotals = content.monthTotals || {};
       detailEntries = content.detailEntries || {};
       if(content.rateCard) rateCard = content.rateCard;
+      if(content.openingBalance) openingBalance = content.openingBalance;
       
       const oldAuto = cloudAuto; cloudAuto = false;
       save('monthTotals', monthTotals);
       save('detailEntries', detailEntries);
       save('rateCard', rateCard);
+      save('openingBalance', openingBalance);
       cloudAuto = oldAuto;
       
       renderCards(); renderLedger(); renderAllEntries(); renderRates();
@@ -648,10 +855,25 @@ let monthTotals   = load('monthTotals',   DEFAULT_MONTH_TOTALS);
 let detailEntries = load('detailEntries', DEFAULT_DETAIL_ENTRIES);
 let rateCard      = load('rateCard',      DEFAULT_RATE_CARD);
 
+// Opening balance — for Excel migration carry-forward
+// billed = total billed to Carnival BEFORE this app started (from old Excel records)
+// paid   = total already paid by Carnival BEFORE this app started
+let openingBalance = load('openingBalance', { billed: 0, paid: 0, note: '', migratedOn: '' });
+
 // ============================================================
-// INIT
+// INIT & MIGRATION
 // ============================================================
 function init(){
+  // Migrate existing records to include applyGst toggle
+  let changed = false;
+  Object.keys(monthTotals).forEach(mk => {
+    if(monthTotals[mk].applyGst === undefined) {
+      monthTotals[mk].applyGst = monthTotals[mk].gst > 0;
+      changed = true;
+    }
+  });
+  if(changed) save('monthTotals', monthTotals);
+
   populateDropdowns();
   if(typeof updateSyncBanner === 'function') updateSyncBanner();
   renderCards();
@@ -662,13 +884,25 @@ function init(){
 }
 
 function populateDropdowns(){
-  const monthOpts = allMonths.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthOpts = allMonths.map(m=>{
+    const isCurrent = m.key === currentKey;
+    const isFuture = m.key > currentKey;
+    const suffix = isCurrent ? ' ← Current' : (isFuture ? ' (Future)' : '');
+    return `<option value="${m.key}">${m.label}${suffix}</option>`;
+  }).join('');
   ['e_month','edit_month','p_month'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.innerHTML=monthOpts;
   });
+  // Default to current month in entry modal
+  ['e_month'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && allMonths.find(m=>m.key===currentKey)) el.value = currentKey;
+  });
   const fm = document.getElementById('filterMonth');
-  if(fm) fm.innerHTML = '<option value="">All Months</option>' + monthOpts;
+  if(fm) fm.innerHTML = '<option value="">All Months</option>' + allMonths.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');
 }
 
 // ============================================================
@@ -677,17 +911,34 @@ function populateDropdowns(){
 function renderCards(){
   let tb=0,tpaid=0,twgst=0;
   Object.values(monthTotals).forEach(m=>{tb+=m.base||0;twgst+=m.total||0;tpaid+=m.paid||0});
-  const bal=twgst-tpaid;
+
+  // Add opening balance (Excel migration carry-forward)
+  const ob = openingBalance;
+  const obBilled = ob.billed || 0;
+  const obPaid   = ob.paid   || 0;
+  const totalBilledWithOB = twgst + obBilled;
+  const totalPaidWithOB   = tpaid + obPaid;
+  const bal = totalBilledWithOB - totalPaidWithOB;
+
+  const obTag = obBilled > 0
+    ? `<div class="card-note" style="color:var(--accent);margin-top:4px">+₹${fmt(obBilled)} opening (Excel)</div>`
+    : '';
+  const obPaidTag = obPaid > 0
+    ? `<div class="card-note" style="color:var(--green);margin-top:4px">+₹${fmt(obPaid)} opening paid</div>`
+    : '';
+
   document.getElementById('statsCards').innerHTML=`
     <div class="card c1">
       <div class="card-label">Total Vendor Bill</div>
-      <div class="card-value">₹ ${fmt(twgst)}</div>
-      <div class="card-note">${Object.keys(monthTotals).length} months tracked</div>
+      <div class="card-value">₹ ${fmt(totalBilledWithOB)}</div>
+      <div class="card-note">${allMonths.filter(m=>monthTotals[m.key]).length} months tracked</div>
+      ${obTag}
     </div>
     <div class="card c2">
       <div class="card-label">Total Paid</div>
-      <div class="card-value" style="color:var(--green)">₹ ${fmt(tpaid)}</div>
-      <div class="card-note">${twgst>0?Math.round(tpaid/twgst*100):0}% paid</div>
+      <div class="card-value" style="color:var(--green)">₹ ${fmt(totalPaidWithOB)}</div>
+      <div class="card-note">${totalBilledWithOB>0?Math.round(totalPaidWithOB/totalBilledWithOB*100):0}% paid</div>
+      ${obPaidTag}
     </div>
     <div class="card c3">
       <div class="card-label">Balance to Pay</div>
@@ -708,6 +959,26 @@ function renderLedger(){
   const s=document.getElementById('searchLedger').value.toLowerCase();
   const sf=document.getElementById('filterStatus').value;
   let rows='', tb=0, tpaid=0, tt=0;
+
+  // Opening balance banner
+  const ob = openingBalance;
+  let obBanner = '';
+  if (ob.billed > 0 || ob.paid > 0) {
+    const obBal = ob.billed - ob.paid;
+    obBanner = `
+      <div style="background:rgba(78,168,245,.09);border:1px solid rgba(78,168,245,.3);border-radius:11px;padding:13px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px">📂 Opening Balance (Excel Migration)</div>
+          <div style="font-size:13px;color:var(--muted)">${ob.note||'Pre-migration carry-forward'} ${ob.migratedOn?'· migrated '+fmtDate(ob.migratedOn):''}</div>
+        </div>
+        <div style="display:flex;gap:18px;font-family:'DM Mono',monospace;font-size:14px;align-items:center;flex-wrap:wrap">
+          <div><span style="color:var(--muted);font-size:11px">BILLED</span><br><span style="color:var(--accent);font-weight:700">₹ ${fmt(ob.billed)}</span></div>
+          <div><span style="color:var(--muted);font-size:11px">PAID</span><br><span style="color:var(--green);font-weight:700">₹ ${fmt(ob.paid)}</span></div>
+          <div><span style="color:var(--muted);font-size:11px">BALANCE</span><br><span style="color:${obBal>0?'var(--red)':'var(--green)'};font-weight:700">₹ ${fmt(Math.abs(obBal))}</span></div>
+          <button class="btn btn-ghost btn-sm" onclick="openObModal()">✏️ Edit</button>
+        </div>
+      </div>`;
+  }
 
   allMonths.forEach(m=>{
     if(s && !m.label.toLowerCase().includes(s)) return;
@@ -733,7 +1004,11 @@ function renderLedger(){
       <td class="amount ${balCls}">₹ ${fmt(Math.abs(bal))}</td>
       <td><span class="badge ${status}">${badge}</span></td>
       <td>
-        <button class="btn btn-success btn-sm" onclick="event.stopPropagation();quickPay('${m.key}')">+ Pay</button>
+        <div class="actions-cell" style="gap:5px;flex-wrap:nowrap">
+          <button class="btn btn-success btn-sm" onclick="event.stopPropagation();quickPay('${m.key}')" title="Record Payment">💳 Pay</button>
+          <button class="btn-icon" onclick="event.stopPropagation();openEditMonth('${m.key}')" title="Edit Month" style="color:var(--accent);border-color:rgba(240,165,0,.4)">✏️</button>
+          <button class="btn-icon" onclick="event.stopPropagation();deleteMonth('${m.key}')" title="Delete Entire Month" style="color:var(--red);border-color:rgba(224,92,58,.4)">🗑️</button>
+        </div>
       </td>
     </tr>`;
   });
@@ -749,9 +1024,9 @@ function renderLedger(){
     <td colspan="2"></td>
   </tr>`;
 
-  document.getElementById('ledgerView').innerHTML=`<table>
+  document.getElementById('ledgerView').innerHTML=`${obBanner}<table>
     <thead><tr>
-      <th>Month</th><th>Net Bill</th><th>GST (18%)</th><th>Total Bill</th><th>Amount Paid</th><th>Balance</th><th>Status</th><th></th>
+      <th>Month</th><th>Net Bill</th><th>GST (18%)</th><th>Total Bill</th><th>Amount Paid</th><th>Balance</th><th>Status</th><th>Actions</th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
@@ -772,6 +1047,7 @@ window.currentDetailMk = mk;
   }
 
 
+  // Set the checkbox state
   const cb = document.getElementById('gstToggle');
   cb.checked = d.applyGst;
   cb.setAttribute('onchange', `toggleGst('${mk}')`);
@@ -782,18 +1058,15 @@ window.currentDetailMk = mk;
     if(e.location) cLoc=e.location;
     const gk=`${cDate}|${cLoc}`;
     if(gk!==lastGrp && (e.date||e.location)){
-      rows+=`<tr class="group-hdr"><td colspan="8">${fmtDate(cDate)} — ${cLoc||''}</td></tr>`;
+      rows+=`<tr class="group-hdr"><td colspan="7">${fmtDate(cDate)} — ${cLoc||''}</td></tr>`;
       lastGrp=gk;
     }
     const dim=(e.w&&e.h)?`${e.w} × ${e.h}`:'—';
-    const editStr = e.editfee ? `+₹${e.editfee}` : '—';
-    
     rows+=`<tr>
       <td style="padding-left:22px;font-weight:500">${e.item}</td>
       <td class="amount" style="color:var(--muted)">${dim}</td>
       <td class="amount" style="color:var(--muted)">${e.qty||'—'}</td>
       <td class="amount" style="color:var(--muted)">${e.rate?'₹'+e.rate:'—'}</td>
-      <td class="amount" style="color:var(--purple);font-size:12px">${editStr}</td>
       <td class="amount" style="font-weight:700">₹ ${fmt(e.total||0)}</td>
       <td>
         <div class="actions-cell">
@@ -804,30 +1077,31 @@ window.currentDetailMk = mk;
     </tr>`;
   });
 
+  // Totals footer
   rows+=`
-    <tr style="background:rgba(78,168,245,.07)">
-      <td colspan="5" style="text-align:right;color:var(--muted);font-size:12px;font-weight:600">NET BILL (BASE)</td>
+    <tr style="background:rgba(240,165,0,.07)">
+      <td colspan="4" style="text-align:right;color:var(--muted);font-size:12px;font-weight:600">NET BILL (BASE)</td>
       <td class="amount" style="font-weight:800;color:var(--accent)">₹ ${fmt(d.base)}</td><td></td>
     </tr>`;
 
   if(d.applyGst) {
     rows+=`
-      <tr style="background:rgba(78,168,245,.04)">
-        <td colspan="5" style="text-align:right;color:var(--muted);font-size:12px">GST @ 18%</td>
+      <tr style="background:rgba(240,165,0,.04)">
+        <td colspan="4" style="text-align:right;color:var(--muted);font-size:12px">GST @ 18%</td>
         <td class="amount" style="color:var(--muted)">₹ ${fmt(d.gst)}</td><td></td>
       </tr>`;
   }
 
   rows+=`
-    <tr style="background:rgba(78,168,245,.12)">
-      <td colspan="5" style="text-align:right;color:var(--accent);font-size:14px;font-weight:700">TOTAL VENDOR BILL</td>
+    <tr style="background:rgba(240,165,0,.12)">
+      <td colspan="4" style="text-align:right;color:var(--accent);font-size:14px;font-weight:700">TOTAL VENDOR BILL</td>
       <td class="amount" style="font-size:15px;font-weight:800;color:var(--accent)">₹ ${fmt(d.total)}</td><td></td>
     </tr>`;
 
-  if(!entries.length) rows=`<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--muted)">No entries yet — click Add Entry</td></tr>`;
+  if(!entries.length) rows=`<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted)">No entries yet — click Add Entry</td></tr>`;
 
   document.getElementById('detailTable').innerHTML=`<table>
-    <thead><tr><th>Item</th><th>W × H</th><th>Qty</th><th>Rate</th><th>Edit Fee</th><th>Total</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Item</th><th>W × H</th><th>Qty</th><th>Rate</th><th>Total</th><th>Actions</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
 
@@ -843,12 +1117,12 @@ function toggleGst(mk) {
     monthTotals[mk].total = monthTotals[mk].base + monthTotals[mk].gst;
     save('monthTotals', monthTotals);
     renderCards();
-    showDetail(mk); 
+    showDetail(mk); // re-render detail
   }
 }
 
 function closeDetail(){
-  renderLedger(); 
+  renderLedger(); // refresh ledger list
   document.getElementById('ledgerView').style.display='';
   document.getElementById('detailView').style.display='none';
 }
@@ -887,7 +1161,6 @@ function renderAllEntries(){
       <td style="font-weight:500">${r.item}</td>
       <td class="amount" style="color:var(--muted)">${dim}</td>
       <td class="amount" style="color:var(--muted)">${r.qty||'—'}</td>
-      <td class="amount" style="color:var(--purple);font-size:12px">${r.editfee?'+₹'+r.editfee:'—'}</td>
       <td class="amount">₹ ${fmt(r.total||0)}</td>
       <td>
         <div class="actions-cell">
@@ -898,11 +1171,11 @@ function renderAllEntries(){
     </tr>`;
   });
 
-  if(!rows) rows=`<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted)">No entries found</td></tr>`;
+  if(!rows) rows=`<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted)">No entries found</td></tr>`;
 
   document.getElementById('entriesTable').innerHTML=`<table>
     <thead><tr>
-      <th>Month</th><th>Date</th><th>Location</th><th>Item</th><th>Dim</th><th>Qty</th><th>Edit Fee</th><th>Total</th><th>Actions</th>
+      <th>Month</th><th>Date</th><th>Location</th><th>Item</th><th>Dim</th><th>Qty</th><th>Total</th><th>Actions</th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
@@ -912,11 +1185,11 @@ function renderAllEntries(){
 // RATE CARD
 // ============================================================
 function renderRates(){
-  const typeColors={flex:'#4ea8f5',board:'#f0a500',item:'#2dca73',fee:'#9b8cff'};
+  const typeColors={standard:'#4ea8f5',premium:'#f0a500',custom:'#9b8cff',transport:'#e05c3a'};
   let rows=rateCard.map((r,i)=>`<tr>
     <td style="font-weight:600">${r.item}</td>
     <td class="amount accent">₹ ${fmt(r.rate)}</td>
-    <td><span class="rate-type-dot" style="background:${typeColors[r.type]||'#7a8099'}"></span>${r.type.toUpperCase()}</td>
+    <td><span class="rate-type-dot" style="background:${typeColors[r.type]||'#7a8099'}"></span>${r.type}</td>
     <td>
       <div class="actions-cell">
         <button class="btn-icon btn-sm" onclick="editRate(${i})">✏️</button>
@@ -926,7 +1199,7 @@ function renderRates(){
   </tr>`).join('');
 
   document.getElementById('ratesTable').innerHTML=`<table>
-    <thead><tr><th>Item</th><th>Rate (₹)</th><th>Category</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Item</th><th>Rate (₹)</th><th>Type</th><th>Actions</th></tr></thead>
     <tbody>${rows||'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--muted)">No rates added</td></tr>'}</tbody>
   </table>`;
 }
@@ -935,7 +1208,7 @@ function openRateModal(){
   document.getElementById('rateModalTitle').textContent='Add Rate';
   document.getElementById('r_item').value='';
   document.getElementById('r_rate').value='';
-  document.getElementById('r_type').value='flex';
+  document.getElementById('r_type').value='standard';
   document.getElementById('r_edit_idx').value='';
   document.getElementById('rateModal').classList.add('open');
 }
@@ -983,7 +1256,12 @@ function openAddModal(){
   document.getElementById('parseStatus').textContent='';
   document.getElementById('e_location').value='';
   document.getElementById('e_date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('e_month').value=allMonths[0].key;
+  // Default to current month
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const sel = document.getElementById('e_month');
+  if(sel && allMonths.find(m=>m.key===currentKey)) sel.value = currentKey;
+  else if(sel) sel.value = allMonths[0].key;
   addRow();
   document.getElementById('addModal').classList.add('open');
 }
@@ -1002,15 +1280,14 @@ function addRow(){
       ${n>1?`<button class="btn btn-danger btn-sm" onclick="removeRow(${n})">✕ Remove</button>`:''}
     </div>
     <div class="ew-grid">
-      <div class="fg"><label>Item Name *</label><input type="text" id="ri_item_${n}" placeholder="e.g. BLACK BACK"></div>
+      <div class="fg"><label>Item Name *</label><input type="text" id="ri_item_${n}" placeholder="e.g. BACKDROP, LED WALL…"></div>
       <div class="fg"><label>Rate Card</label><select id="ri_rcard_${n}" onchange="applyRateCard(${n})"></select></div>
     </div>
-    <div class="ew-5">
+    <div class="ew-4">
       <div class="fg"><label>W (ft)</label><input type="number" id="ri_w_${n}" placeholder="W" oninput="calcRow(${n})"></div>
       <div class="fg"><label>H (ft)</label><input type="number" id="ri_h_${n}" placeholder="H" oninput="calcRow(${n})"></div>
       <div class="fg"><label>Qty</label><input type="number" id="ri_qty_${n}" value="1" oninput="calcRow(${n})"></div>
-      <div class="fg"><label>Rate (₹)</label><input type="number" id="ri_rate_${n}" value="13" oninput="calcRow(${n})"></div>
-      <div class="fg"><label style="color:var(--purple)">Edit Fee</label><input type="number" id="ri_editfee_${n}" placeholder="+" oninput="calcRow(${n})"></div>
+      <div class="fg"><label>Rate (₹)</label><input type="number" id="ri_rate_${n}" value="17" oninput="calcRow(${n})"></div>
     </div>
     <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
       <div class="fg" style="flex:1">
@@ -1025,23 +1302,12 @@ function addRow(){
 }
 function removeRow(n){document.getElementById(`erow-${n}`).remove();updateGrandTotal()}
 function applyRateCard(n){const v=document.getElementById(`ri_rcard_${n}`).value;if(v){document.getElementById(`ri_rate_${n}`).value=v;calcRow(n)}}
-
 function calcRow(n){
   const w=parseFloat(document.getElementById(`ri_w_${n}`)?.value)||0;
   const h=parseFloat(document.getElementById(`ri_h_${n}`)?.value)||0;
   const qty=parseFloat(document.getElementById(`ri_qty_${n}`)?.value)||1;
   const rate=parseFloat(document.getElementById(`ri_rate_${n}`)?.value)||0;
-  const edit=parseFloat(document.getElementById(`ri_editfee_${n}`)?.value)||0;
-  
-  let t = 0;
-  if(w > 0 && h > 0){
-    t = w * h * qty * rate;
-  } else {
-    // If no dimensions are given, assume it's a per-piece or flat rate item
-    t = qty * rate;
-  }
-  t += edit;
-  
+  const t=w&&h?w*h*qty*rate:0;
   if(t>0) document.getElementById(`ri_total_${n}`).value=t;
   document.getElementById(`ri_pill_${n}`).textContent=`₹ ${fmt(t)}`;
   updateGrandTotal();
@@ -1068,10 +1334,8 @@ function saveEntries(){
     const h=parseFloat(document.getElementById(`ri_h_${n}`)?.value)||null;
     const qty=parseFloat(document.getElementById(`ri_qty_${n}`)?.value)||null;
     const rate=parseFloat(document.getElementById(`ri_rate_${n}`)?.value)||null;
-    const editfee=parseFloat(document.getElementById(`ri_editfee_${n}`)?.value)||0;
-    
     if(!detailEntries[mk])detailEntries[mk]=[];
-    detailEntries[mk].push({date,location,item,w,h,qty,rate,editfee,total});
+    detailEntries[mk].push({date,location,item,w,h,qty,rate,total});
     totalAdded+=total;added++;
   });
   if(!added){alert('Enter at least one item with total');return}
@@ -1099,8 +1363,7 @@ function editEntry(mk,idx){
   document.getElementById('edit_w').value=e.w||'';
   document.getElementById('edit_h').value=e.h||'';
   document.getElementById('edit_qty').value=e.qty||1;
-  document.getElementById('edit_rate').value=e.rate||13;
-  document.getElementById('edit_editfee').value=e.editfee||'';
+  document.getElementById('edit_rate').value=e.rate||17;
   document.getElementById('edit_total').value=e.total||'';
   document.getElementById('edit_key').value=`${mk}|${idx}`;
   populateRateDropdown('edit_rcard');
@@ -1112,13 +1375,7 @@ function calcEdit(){
   const h=parseFloat(document.getElementById('edit_h').value)||0;
   const qty=parseFloat(document.getElementById('edit_qty').value)||1;
   const rate=parseFloat(document.getElementById('edit_rate').value)||0;
-  const edit=parseFloat(document.getElementById('edit_editfee').value)||0;
-  
-  let t = 0;
-  if(w > 0 && h > 0) t = w * h * qty * rate;
-  else t = qty * rate;
-  t += edit;
-  
+  const t=w&&h?w*h*qty*rate:0;
   if(t>0) document.getElementById('edit_total').value=t;
 }
 function saveEdit(){
@@ -1135,7 +1392,6 @@ function saveEdit(){
     h:parseFloat(document.getElementById('edit_h').value)||null,
     qty:parseFloat(document.getElementById('edit_qty').value)||null,
     rate:parseFloat(document.getElementById('edit_rate').value)||null,
-    editfee:parseFloat(document.getElementById('edit_editfee').value)||0,
     total:parseFloat(document.getElementById('edit_total').value)||0
   };
   const diff=entries[idx].total-oldTotal;
@@ -1155,15 +1411,18 @@ function deleteEntry(mk,idx){
   if(!entries||!entries[idx])return;
   const total=entries[idx].total;
   entries.splice(idx,1);
-  if(!entries.length)delete detailEntries[mk];
-  if(monthTotals[mk]){
-    monthTotals[mk].base-=total;
-    monthTotals[mk].gst = monthTotals[mk].applyGst ? monthTotals[mk].base * GST_RATE : 0;
+  if(!entries.length){
+    // No entries left — wipe the entire month completely
+    delete detailEntries[mk];
+    delete monthTotals[mk];
+  } else if(monthTotals[mk]){
+    monthTotals[mk].base -= total;
+    if(monthTotals[mk].base < 0) monthTotals[mk].base = 0;
+    monthTotals[mk].gst   = monthTotals[mk].applyGst ? monthTotals[mk].base * GST_RATE : 0;
     monthTotals[mk].total = monthTotals[mk].base + monthTotals[mk].gst;
-    if(monthTotals[mk].base<=0)delete monthTotals[mk];
   }
-  save('monthTotals',monthTotals);save('detailEntries',detailEntries);
-  renderCards();renderLedger();renderAllEntries();
+  save('monthTotals',monthTotals); save('detailEntries',detailEntries);
+  renderCards(); renderLedger(); renderAllEntries();
   if(document.getElementById('detailView').style.display!=='none'){
     if(detailEntries[mk]) showDetail(mk); else closeDetail();
   }
@@ -1190,7 +1449,63 @@ function savePayment(){
 }
 
 // ============================================================
-// WHATSAPP PARSER
+// EDIT / DELETE MONTH
+// ============================================================
+function openEditMonth(mk){
+  const m = allMonths.find(x=>x.key===mk);
+  const d = monthTotals[mk]||{base:0,gst:0,total:0,paid:0,applyGst:false};
+  document.getElementById('em_key').value   = mk;
+  document.getElementById('editMonthLabel').textContent = m?.label || mk;
+  document.getElementById('em_base').value  = d.base||0;
+  document.getElementById('em_paid').value  = d.paid||0;
+  document.getElementById('em_gst').value   = d.applyGst ? 'yes' : 'no';
+  recalcEditMonth();
+  document.getElementById('editMonthModal').classList.add('open');
+}
+function recalcEditMonth(){
+  const base  = parseFloat(document.getElementById('em_base').value)||0;
+  const gstOn = document.getElementById('em_gst').value === 'yes';
+  const gst   = gstOn ? base * GST_RATE : 0;
+  const total = base + gst;
+  document.getElementById('em_preview').innerHTML =
+    `Base: <span style="color:var(--text)">₹ ${fmt(base)}</span> &nbsp;|&nbsp; ` +
+    `GST: <span style="color:var(--purple)">₹ ${fmt(gst)}</span> &nbsp;|&nbsp; ` +
+    `Total: <span style="color:var(--accent)">₹ ${fmt(total)}</span>`;
+}
+function saveEditMonth(){
+  const mk    = document.getElementById('em_key').value;
+  const base  = parseFloat(document.getElementById('em_base').value)||0;
+  const paid  = parseFloat(document.getElementById('em_paid').value)||0;
+  const gstOn = document.getElementById('em_gst').value === 'yes';
+  const gst   = gstOn ? base * GST_RATE : 0;
+  const total = base + gst;
+  if(!monthTotals[mk]) monthTotals[mk] = {base:0,gst:0,total:0,paid:0,applyGst:false};
+  monthTotals[mk].base     = base;
+  monthTotals[mk].gst      = gst;
+  monthTotals[mk].total    = total;
+  monthTotals[mk].paid     = paid;
+  monthTotals[mk].applyGst = gstOn;
+  // If base is zeroed out and no entries exist, clean up
+  if(base <= 0 && !(detailEntries[mk]?.length)) delete monthTotals[mk];
+  save('monthTotals', monthTotals);
+  closeModal('editMonthModal');
+  renderCards(); renderLedger(); renderAllEntries();
+  alert(`✓ ${allMonths.find(m=>m.key===mk)?.label||mk} updated`);
+}
+function deleteMonth(mk){
+  const label = allMonths.find(m=>m.key===mk)?.label || mk;
+  const entryCount = (detailEntries[mk]||[]).length;
+  if(!confirm(`Delete entire month "${label}"?\n\nThis will permanently remove:\n• ${entryCount} line entr${entryCount===1?'y':'ies'}\n• All billing & payment data for this month\n\nThis cannot be undone.`)) return;
+  delete detailEntries[mk];
+  delete monthTotals[mk];
+  save('monthTotals', monthTotals);
+  save('detailEntries', detailEntries);
+  if(document.getElementById('detailView').style.display !== 'none') closeDetail();
+  renderCards(); renderLedger(); renderAllEntries();
+}
+
+// ============================================================
+// WHATSAPP PARSER (IMPROVED)
 // ============================================================
 function parseWhatsApp(){
   const raw=document.getElementById('whatsappText').value;
@@ -1201,19 +1516,43 @@ function parseWhatsApp(){
   let currentItem=null;
   let baseLocation=document.getElementById('e_location').value.trim();
 
+  // ── Pattern matchers ──────────────────────────────────
   const isEventMeta = l =>
-    /^\d{1,2}[\.\s]*(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER)/i.test(l) ||
+    /^\d{1,2}[\.\s]*(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)/i.test(l) ||
     /KAAM\s*START|EVENT\s*ON\s*:|CLIENT\s*DRY\s*RUN|SET\s*UP|RAAT|SUBAH/i.test(l) ||
-    /^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l);
+    /NIGHT\s*SET\s*UP|READY\s*AT|\bNIGHT\b.*SET/i.test(l) ||
+    /^\d{1,2}\s*PM\b|^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l) ||
+    /^(7|8|9|10|11|12)\.\d+\s*(AM|PM)/i.test(l);
 
+  // Height-only like "1.6 FT HI" or "1 FT HI" — skip, just a stage height note
+  const isHeightOnly = l => /^\d+\.?\d*\s*FT\s*(HI|HIGH)[.\s]*$/i.test(l);
+  // Descriptor words (not billable items)
+  const isDescriptor = l =>
+    /^(\d+\s*STEPS?|GREY\s*CARPET|STEPS?|CLICKER\s+\d+|STRUCTURE|TRUSS)\s*$/i.test(l) ||
+    /^\(?\s*\d+\s*PCS\s*\)?\s*$/i.test(l) ||   // standalone "( 2 PCS )" quantity-only line
+    /^\(\s*(FRONT|BACK|SIDE|LEFT|RIGHT)\s*\)\s*$/i.test(l); // bracketed face labels like "( FRONT )"
+  // Location line detection
   const isLocation = l =>
-    /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ)/i.test(l) &&
+    /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|BOUNDARY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ)/i.test(l) &&
     !/^\d/.test(l) &&
-    !/(FLEX|BLACKBACK|VINYL|SUNBOARD|STANDEE|LANYARD|CERTIFICATE|PRINTOUT|EDITING)/i.test(l);
+    !/(LED|RISER|STAGE|BACKDROP|SIDE PANEL|MASKING|STANDEE|TRANSPORT|FLEX|CLICKER|PLATFORM)/i.test(l);
 
-  const dimByRe = /^(\d+\.?\d*)\s*(?:by|x|BY|X)\s*(\d+\.?\d*)/i;
-  const pcsRe = /^(\d+)\s*(?:PCS|NOS)\s*(.+)?/i;
-  const editRe = /^EDITING\s*(\d+)/i;
+  // Dimension: "16 by 8", "12 X 4", "2 x 9 hi", "16 BY 8"
+  const dimByRe = /^(\d+\.?\d*)\s*(?:by|x|BY|X)\s*(\d+\.?\d*)(?:\s*(FT\s*)?(HI|HIGH))?/i;
+  // Dimension: "6 W 8 HI" or "6W 8HI"
+  const dimWHRe = /^(\d+\.?\d*)\s*W\s+(\d+\.?\d*)\s*(FT\s*)?(HI|HIGH)?/i;
+  // Dimension: "16 W X 2 HI" — Width explicitly marked with W, then X separator
+  const dimWXRe = /^(\d+\.?\d*)\s*W\s*[X×x]\s*(\d+\.?\d*)(?:\s*(FT\s*)?(HI|HIGH))?/i;
+  // Quantity prefix: "2 PCS SIDE PANELS", "4 PCS TABLE FRONT"
+  const pcsRe = /^(\d+)\s*PCS\s+(.+)/i;
+
+  // Clean item names: strip noise like "..", "....*TAR YAAD SEY LANA", extra spaces
+  const cleanItemName = name => name
+    .replace(/\.{2,}.*/g, '')      // remove ".." and everything after it
+    .replace(/\*.*$/g, '')         // remove notes after *
+    .replace(/\s{2,}/g, ' ')      // collapse multiple spaces
+    .replace(/\s+[()]\s*/g, (m) => m.trim()) // tighten parentheses
+    .trim();
 
   const pushCurrent=()=>{
     if(currentItem&&currentItem.item&&currentItem.item.length>1){
@@ -1224,8 +1563,13 @@ function parseWhatsApp(){
 
   for(let i=0;i<lines.length;i++){
     const line=lines[i];
-    if(isEventMeta(line)) continue;
 
+    // Skip event metadata
+    if(isEventMeta(line)) continue;
+    if(isHeightOnly(line)) continue;
+    if(isDescriptor(line)) continue;
+
+    // Location line
     if(isLocation(line)){
       pushCurrent();
       baseLocation=line;
@@ -1234,44 +1578,60 @@ function parseWhatsApp(){
       continue;
     }
 
-    const editM = line.match(editRe);
-    if(editM){
-      if(currentItem){
-        currentItem.editfee = parseFloat(editM[1]);
-        currentItem.total += currentItem.editfee;
+    // W X format: "16 W X 2 HI" (Width marked with W, then X separator)
+    const wxM=line.match(dimWXRe);
+    if(wxM){
+      const w=parseFloat(wxM[1]),h=parseFloat(wxM[2]);
+      if(currentItem&&currentItem.item){
+        currentItem.w=w;currentItem.h=h;
+        currentItem.total=w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        pushCurrent();
       }
       continue;
     }
 
+    // W H format: "6 W 8 HI"
+    const whM=line.match(dimWHRe);
+    if(whM){
+      const w=parseFloat(whM[1]),h=parseFloat(whM[2]);
+      if(currentItem&&currentItem.item){
+        currentItem.w=w;currentItem.h=h;
+        currentItem.total=w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        pushCurrent();
+      }
+      continue;
+    }
+
+    // By/x format: "16 by 8"
     const dimM=line.match(dimByRe);
     if(dimM){
-      if(currentItem){
-        currentItem.w=parseFloat(dimM[1]);
-        currentItem.h=parseFloat(dimM[2]);
-        currentItem.total = currentItem.w * currentItem.h * currentItem.qty * currentItem.rate;
+      const w=parseFloat(dimM[1]),h=parseFloat(dimM[2]);
+      if(currentItem&&currentItem.item){
+        currentItem.w=w;currentItem.h=h;
+        currentItem.total=w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        pushCurrent();
       }
       continue;
     }
 
+    // PCS prefix: "4 PCS TABLE FRONT"
     const pcsM=line.match(pcsRe);
     if(pcsM){
-      if(currentItem && !pcsM[2]) {
-        currentItem.qty = parseInt(pcsM[1]);
-        if(currentItem.w && currentItem.h) currentItem.total = currentItem.w * currentItem.h * currentItem.qty * currentItem.rate;
-        else currentItem.total = currentItem.qty * currentItem.rate;
-      } else {
-        pushCurrent();
-        const itemName=(pcsM[2]||"").trim();
-        const matchedRate=findRate(itemName);
-        currentItem={item:itemName.toUpperCase(),qty:parseInt(pcsM[1]),rate:matchedRate,w:null,h:null,editfee:0,total:matchedRate*parseInt(pcsM[1]),location:baseLocation||null};
-      }
+      pushCurrent();
+      const itemName=cleanItemName(pcsM[2].trim());
+      const matchedRate=findRate(itemName);
+      currentItem={item:itemName.toUpperCase(),qty:parseInt(pcsM[1]),rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
       continue;
     }
 
+    // Plain text — treat as item name (skip very short or pure-number lines)
     if(line.length>=3 && !/^\d+$/.test(line)){
       pushCurrent();
-      const matchedRate=findRate(line);
-      currentItem={item:line.toUpperCase(),qty:1,rate:matchedRate,w:null,h:null,editfee:0,total:matchedRate,location:baseLocation||null};
+      const cleanLine=cleanItemName(line);
+      if(cleanLine.length>=2){
+        const matchedRate=findRate(cleanLine);
+        currentItem={item:cleanLine.toUpperCase(),qty:1,rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
+      }
     }
   }
   pushCurrent();
@@ -1290,9 +1650,9 @@ function parseWhatsApp(){
     ${parsed.map((p,idx)=>`
       <div class="parse-item">
         <strong>${idx+1}.</strong> ${p.item}
-        ${p.w&&p.h?` — ${p.w} × ${p.h}`:''}
+        ${p.w&&p.h?` — ${p.w} × ${p.h} ft`:' — <em style="color:var(--muted)">dims missing</em>'}
         — Qty: ${p.qty}
-        ${p.editfee?` — <span style="color:var(--purple)">+₹${p.editfee} Edit</span>`:''}
+        — Rate: ₹${p.rate}
         — <span style="color:var(--accent);font-weight:700">₹${fmt(p.total)}</span>
       </div>`).join('')}
     <button class="btn btn-success" style="margin-top:12px;width:100%" onclick="fillFromParsed(${JSON.stringify(parsed).replace(/"/g,'&quot;')})">
@@ -1304,18 +1664,37 @@ function parseWhatsApp(){
 }
 
 function findRate(itemName){
-  const n=itemName.toUpperCase();
-  for(const r of rateCard){
-    if(n.includes(r.item)||r.item.includes(n)) return r.rate;
+  const n = itemName.toUpperCase().trim();
+
+  // TRANSPORT always first (fixed rate, no dimensions)
+  if (/\bTRANSPORT\b/i.test(n)) return 1000;
+
+  // FRAME always wins — even "FRAME FOR LED WALL RISER" → 17
+  // Must come BEFORE RISER because that item name contains both words
+  if (/\bFRAME\b/i.test(n)) return 17;
+
+  // RISER in any form: "RISER FOR LED WALL", "RISER FOR CAMERA", plain "RISER" → 25
+  // Must come BEFORE LED WALL check — "RISER FOR LED WALL" contains "LED WALL"!
+  if (/\bRISER\b/i.test(n)) return 25;
+
+  // PLATFORM (same category as riser) → 25
+  if (/\bPLATFORM\b/i.test(n)) return 25;
+
+  // Pure LED WALL (now safe — riser/frame/platform already caught above) → 110
+  if (/LED\s*WALL/i.test(n)) return 110;
+
+  // STAGE: pure stage → 30
+  // But "STAGE BRANDING" is just a flex/vinyl graphic on a stage face → 17
+  if (/^STAGE\b/i.test(n) && !/BRANDING|WRAP|GRAPHIC|PRINT|PANEL/i.test(n)) return 30;
+
+  // Custom rate-card items (PROJECTOR MASKING etc.)
+  for (const r of rateCard) {
+    if (r.type === 'custom' && n.includes(r.item.toUpperCase())) return r.rate;
   }
-  if(/BLACK\s*BACK/i.test(n)) return 13;
-  if(/STAR\s*MATT/i.test(n)) return 20;
-  if(/VINYL/i.test(n)) return 50;
-  if(/SUNBOARD|SUN\s*BOARD/i.test(n)) return 80;
-  if(/ROLL\s*UP/i.test(n)) return 1500;
-  if(/LANYARD/i.test(n)) return 30;
-  if(/EDITING/i.test(n)) return 200;
-  return 13; // default flex rate
+
+  // Default → 17: BACKDROP, STANDEE, MASKING, BRANDING, FLEX, SIDE PANELS,
+  //               WELCOME STANDEE, FRAME, TABLE FRONT, REGISTRATION BACKDROP…
+  return 17;
 }
 
 function fillFromParsed(data){
@@ -1328,15 +1707,14 @@ function fillFromParsed(data){
     document.getElementById(`ri_w_${n}`).value=item.w||'';
     document.getElementById(`ri_h_${n}`).value=item.h||'';
     document.getElementById(`ri_qty_${n}`).value=item.qty||1;
-    document.getElementById(`ri_rate_${n}`).value=item.rate||13;
-    document.getElementById(`ri_editfee_${n}`).value=item.editfee||'';
+    document.getElementById(`ri_rate_${n}`).value=item.rate||17;
     calcRow(n);
   });
   document.getElementById('parseStatus').textContent=`✓ ${data.length} item${data.length>1?'s':''} filled into form`;
 }
 
 // ============================================================
-// PDF EXPORT
+// PDF EXPORT — LIGHT THEME (READABLE & PRINTABLE)
 // ============================================================
 
 function exportPDF(mk){
@@ -1427,7 +1805,7 @@ function exportPDF(mk){
 
 
 // ============================================================
-// EXCEL EXPORT
+// EXCEL EXPORT — COLORFUL HTML/XLS
 // ============================================================
 
 function exportExcel(mk){
@@ -1559,9 +1937,103 @@ td,th{border:1px solid #d1d5db;padding:6px 10px;vertical-align:middle}
   const a=document.createElement('a');
   a.href=url;a.download=`Vendor_Ledger_${fileNameSuffix}_${new Date().toISOString().split('T')[0]}.xls`;
   a.click();URL.revokeObjectURL(url);
+  alert('✓ Excel exported successfully');
 }
 
 
+
+function exportPDF(mk){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('l','mm','a4');
+  const W=297,H=210;
+
+  const mList = mk ? [allMonths.find(m=>m.key===mk)].filter(Boolean) : allMonths;
+  const fileNameSuffix = mk ? mList[0].label.replace(' ','_') : 'ALL';
+
+  doc.setFillColor(255,255,255);
+  doc.rect(0,0,W,H,'F');
+
+  doc.setFillColor(78,168,245);
+  doc.rect(0,0,W,18,'F');
+  doc.setFontSize(13);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');
+  doc.text('VENDOR LEDGER — ' + (mk ? mList[0].label.toUpperCase() : 'ALL MONTHS'),14,12);
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text(`Generated: ${new Date().toLocaleDateString('en-IN')}`,W-14,12,{align:'right'});
+
+  doc.setFontSize(11);doc.setTextColor(78,168,245);doc.setFont('helvetica','bold');
+  doc.text('MONTHLY SUMMARY',14,28);
+
+  const sRows=[],tot={base:0,gst:0,total:0,paid:0,bal:0};
+  mList.forEach(m=>{
+    const d=monthTotals[m.key];if(!d)return;
+    const bal=d.total-d.paid;
+    const pct=d.total>0?Math.round(d.paid/d.total*100):0;
+    const status=pct>=100?'PAID':pct>0?pct+'% PAID':'PENDING';
+    sRows.push([m.label,`Rs. ${fmt(d.base)}`,`Rs. ${fmt(d.gst||0)}`,`Rs. ${fmt(d.total)}`,`Rs. ${fmt(d.paid)}`,`Rs. ${fmt(Math.abs(bal))}`,status]);
+    tot.base+=d.base;tot.gst+=d.gst||0;tot.total+=d.total;tot.paid+=d.paid;tot.bal+=bal;
+  });
+  sRows.push(['TOTAL',`Rs. ${fmt(tot.base)}`,`Rs. ${fmt(tot.gst)}`,`Rs. ${fmt(tot.total)}`,`Rs. ${fmt(tot.paid)}`,`Rs. ${fmt(Math.abs(tot.bal))}`,'']);
+
+  doc.autoTable({
+    startY:32,
+    head:[['Month','Net Bill','GST Added','Total Bill','Amount Paid','Balance','Status']],
+    body:sRows,
+    theme:'grid',
+    headStyles:{fillColor:[78,168,245],textColor:[255,255,255],fontSize:9,fontStyle:'bold',cellPadding:4},
+    bodyStyles:{fontSize:9,textColor:[30,30,40],cellPadding:4},
+    alternateRowStyles:{fillColor:[248,249,252]},
+    styles:{lineColor:[210,215,225],lineWidth:0.3},
+    margin:{left:14,right:14}
+  });
+
+  doc.addPage();
+  doc.setFillColor(78,168,245);
+  doc.rect(0,0,W,18,'F');
+  doc.setFontSize(13);doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');
+  doc.text('ALL LINE ENTRIES',14,12);
+
+  const eRows=[];
+  mList.forEach(m=>{
+    const arr=detailEntries[m.key]||[];
+    let cDate=null,cLoc=null;
+    arr.forEach(e=>{
+      if(e.date)cDate=e.date;
+      if(e.location)cLoc=e.location;
+      eRows.push([
+        m.label,
+        fmtDate(cDate),
+        cLoc||'—',
+        e.item,
+        e.w&&e.h?`${e.w}×${e.h}`:'—',
+        e.qty||'—',
+        e.rate?`Rs. ${e.rate}`:'—',
+        e.editfee?`+Rs. ${e.editfee}`:(e.diesel?`-Rs. ${e.diesel}`:'—'),
+        `Rs. ${fmt(e.total)}`
+      ]);
+    });
+  });
+
+  doc.autoTable({
+    startY:22,
+    head:[['Month','Date','Location','Item','W×H','Qty','Rate','Adj.','Total']],
+    body:eRows,
+    theme:'grid',
+    headStyles:{fillColor:[78,168,245],textColor:[255,255,255],fontSize:8,fontStyle:'bold',cellPadding:3},
+    bodyStyles:{fontSize:8,textColor:[30,30,40],cellPadding:3},
+    alternateRowStyles:{fillColor:[248,249,252]},
+    styles:{lineColor:[210,215,225],lineWidth:0.3},
+    margin:{left:14,right:14}
+  });
+
+  doc.save(`Vendor_Ledger_${fileNameSuffix}_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+
+
+
+// ============================================================
+// NAVIGATION
+// ============================================================
 function showPage(id,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -1574,6 +2046,9 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
   o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')})
 });
 
+// ============================================================
+// HELPERS
+// ============================================================
 function fmt(n){if(n==null||isNaN(n))return'0';return Math.round(n).toLocaleString('en-IN')}
 function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}catch{return d}}
 
@@ -1582,7 +2057,7 @@ function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString(
 // LOCAL JSON EXPORT / IMPORT
 // ============================================================
 function exportJSON() {
-  const data = { monthTotals, detailEntries, rateCard };
+  const data = { monthTotals, detailEntries, rateCard, openingBalance };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1602,11 +2077,13 @@ function importJSON(event) {
       monthTotals = content.monthTotals || {};
       detailEntries = content.detailEntries || {};
       if(content.rateCard) rateCard = content.rateCard;
+      if(content.openingBalance) openingBalance = content.openingBalance;
       const oldAuto = typeof cloudAuto !== 'undefined' ? cloudAuto : false;
       if(typeof cloudAuto !== 'undefined') cloudAuto = false;
       save('monthTotals', monthTotals);
       save('detailEntries', detailEntries);
       save('rateCard', rateCard);
+      save('openingBalance', openingBalance);
       if(typeof cloudAuto !== 'undefined') cloudAuto = oldAuto;
       renderCards(); renderLedger(); renderAllEntries(); renderRates();
       alert('✓ Data successfully imported from JSON!');
@@ -1616,6 +2093,45 @@ function importJSON(event) {
   reader.readAsText(file);
 }
 
+
+// ============================================================
+// OPENING BALANCE (Excel Migration)
+// ============================================================
+function openObModal() {
+  document.getElementById('ob_billed').value = openingBalance.billed || 0;
+  document.getElementById('ob_paid').value   = openingBalance.paid   || 0;
+  document.getElementById('ob_note').value   = openingBalance.note   || '';
+  document.getElementById('ob_date').value   = openingBalance.migratedOn || '';
+  updateObPreview();
+  document.getElementById('obModal').classList.add('open');
+}
+function updateObPreview() {
+  const billed = parseFloat(document.getElementById('ob_billed').value) || 0;
+  const paid   = parseFloat(document.getElementById('ob_paid').value)   || 0;
+  const bal    = billed - paid;
+  document.getElementById('ob_preview').innerHTML =
+    `Billed Before Migration: <span style="color:var(--accent)">₹ ${fmt(billed)}</span><br>
+     Already Paid (Excel): <span style="color:var(--green)">₹ ${fmt(paid)}</span><br>
+     Carry-Forward Balance: <span style="color:${bal>0?'var(--red)':'var(--green)'}">₹ ${fmt(Math.abs(bal))} ${bal>0?'(still owed)':'(cleared)'}</span>`;
+}
+function saveOpeningBalance() {
+  const billed = parseFloat(document.getElementById('ob_billed').value) || 0;
+  const paid   = parseFloat(document.getElementById('ob_paid').value)   || 0;
+  const note   = document.getElementById('ob_note').value.trim();
+  const date   = document.getElementById('ob_date').value;
+  openingBalance = { billed, paid, note, migratedOn: date };
+  save('openingBalance', openingBalance);
+  closeModal('obModal');
+  renderCards();
+  alert(`✓ Opening balance saved!\n₹${fmt(billed)} billed, ₹${fmt(paid)} paid before migration.`);
+}
+function clearOpeningBalance() {
+  if (!confirm('Clear all opening balance / migration data?')) return;
+  openingBalance = { billed: 0, paid: 0, note: '', migratedOn: '' };
+  save('openingBalance', openingBalance);
+  closeModal('obModal');
+  renderCards();
+}
 
 function updateSyncBanner(ts) {
   if (ts) localStorage.setItem(STORE_VER + 'last_sync', ts);
