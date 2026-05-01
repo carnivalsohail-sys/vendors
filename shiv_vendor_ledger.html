@@ -7,7 +7,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SHIV Vendor Ledger — Flex Production</title>
+<title>SHIV Vendor Ledger v5 — Flex Production</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -193,11 +193,13 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(240,16
   <div class="logo">
     <div class="logo-icon">📋</div>
     <div>
-      <div class="logo-text">SHIV Vendor Ledger</div>
+      <div class="logo-text">RAVI Vendor Ledger</div>
       <div class="logo-sub">Flex Production</div>
     </div>
   </div>
   <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openObModal()" title="Opening Balance / Excel Migration" style="border-color:rgba(78,168,245,.5);color:var(--blue)">📂 <span>Opening Bal</span></button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('addMonthModal').classList.add('open')" title="Add future or custom month">📅 <span>Add Month</span></button>
     <button class="btn btn-ghost btn-sm" onclick="openCloudModal()">☁️ <span>Cloud Sync</span></button>
     <button class="btn btn-ghost btn-sm" onclick="exportJSON()">📤 <span>JSON</span></button>
     <label class="btn btn-ghost btn-sm" style="margin:0;cursor:pointer">📥 <span style="display:inline">Import</span><input type="file" style="display:none" accept=".json" onchange="importJSON(event)"></label>
@@ -399,6 +401,37 @@ REGISTARTION BACK DROP
 </div>
 
 <!-- =========================================================
+     MODAL: EDIT MONTH
+========================================================== -->
+<div id="editMonthModal" class="modal-overlay">
+  <div class="modal pay-modal" style="width:480px">
+    <h3>✏️ Edit Month</h3>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;font-family:'DM Mono',monospace" id="editMonthLabel"></div>
+    <input type="hidden" id="em_key">
+    <div class="form-group">
+      <label>Net Bill (Base ₹) — override if needed</label>
+      <input type="number" id="em_base" placeholder="0" oninput="recalcEditMonth()">
+    </div>
+    <div class="form-group">
+      <label>Total Paid (₹) — cumulative amount paid</label>
+      <input type="number" id="em_paid" placeholder="0">
+    </div>
+    <div class="form-group">
+      <label>Apply 18% GST?</label>
+      <select id="em_gst" onchange="recalcEditMonth()">
+        <option value="yes">Yes — include GST</option>
+        <option value="no">No — exclude GST</option>
+      </select>
+    </div>
+    <div style="background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.25);border-radius:9px;padding:12px;margin-bottom:4px;font-family:'DM Mono',monospace;font-size:13px" id="em_preview"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('editMonthModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditMonth()">💾 Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
      MODAL: RATE CARD
 ========================================================== -->
 <div id="rateModal" class="modal-overlay">
@@ -470,30 +503,201 @@ REGISTARTION BACK DROP
   </div>
 </div>
 
+<!-- =========================================================
+     MODAL: OPENING BALANCE (Excel Migration)
+========================================================== -->
+<div id="obModal" class="modal-overlay">
+  <div class="modal" style="width:520px">
+    <h3>📂 Opening Balance — Excel Migration</h3>
+    <div style="background:rgba(78,168,245,.08);border:1px solid rgba(78,168,245,.3);border-radius:10px;padding:13px;margin-bottom:18px;font-size:13px;color:var(--muted);line-height:1.6">
+      <strong style="color:var(--blue)">Migrating from Excel?</strong> Enter the cumulative amounts
+      from your old Excel records here. These will be added to your totals as a carry-forward balance,
+      so the balance due to RAVI reflects the full picture — including amounts before this app started.
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Migration Date (When you started using this app)</label>
+      <input type="date" id="ob_date">
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Total Billed Before Migration (₹) — from Excel records</label>
+      <input type="number" id="ob_billed" placeholder="0" oninput="updateObPreview()">
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Total Already Paid Before Migration (₹) — from Excel records</label>
+      <input type="number" id="ob_paid" placeholder="0" oninput="updateObPreview()">
+    </div>
+    <div class="fg" style="margin-bottom:15px">
+      <label>Notes (optional)</label>
+      <input type="text" id="ob_note" placeholder="e.g. Data from Excel ledger Apr 2023 – Oct 2024">
+    </div>
+    <div style="background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.25);border-radius:9px;padding:13px;font-family:'DM Mono',monospace;font-size:13px;margin-bottom:16px;line-height:1.8" id="ob_preview">—</div>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-sm" onclick="clearOpeningBalance()">🗑️ Clear</button>
+      <button class="btn btn-ghost" onclick="closeModal('obModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveOpeningBalance()">💾 Save Opening Balance</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL: ADD CUSTOM MONTH
+========================================================== -->
+<div id="addMonthModal" class="modal-overlay">
+  <div class="modal" style="width:380px">
+    <h3>📅 Add Month to Calendar</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5">
+      The calendar auto-generates months from Nov 2024 through
+      <strong style="color:var(--accent)">12 months into the future</strong>.
+      Use this to add any month outside that range.
+    </div>
+    <div class="fg" style="margin-bottom:16px">
+      <label>Select Month</label>
+      <input type="month" id="customMonthPicker" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;width:100%;outline:none">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addMonthModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addCustomMonth()">➕ Add Month</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 
 // CONSTANTS
 // ============================================================
 const GST_RATE = 0.18;
-const STORE_VER = 'shiv_v1_';
+const STORE_VER = 'rv4_';
 let rowCounter = 0;
 
-const allMonths = [
-  {key:'2026-04',label:'Apr 2026'},{key:'2026-03',label:'Mar 2026'},
-  {key:'2026-02',label:'Feb 2026'},{key:'2026-01',label:'Jan 2026'},
-  {key:'2025-12',label:'Dec 2025'},{key:'2025-11',label:'Nov 2025'},
-  {key:'2025-10',label:'Oct 2025'},{key:'2025-09',label:'Sep 2025'},
-  {key:'2025-08',label:'Aug 2025'},{key:'2025-07',label:'Jul 2025'},
-  {key:'2025-06',label:'Jun 2025'},{key:'2025-05',label:'May 2025'},
-  {key:'2025-04',label:'Apr 2025'},{key:'2025-03',label:'Mar 2025'},
-  {key:'2025-02',label:'Feb 2025'},{key:'2025-01',label:'Jan 2025'},
-  {key:'2024-12',label:'Dec 2024'},{key:'2024-11',label:'Nov 2024'},
-];
+// ── DYNAMIC MONTH GENERATION ──────────────────────────────────────
+// Generates months from Nov 2024 through current month + 12 months future
+// Stored custom months (from "Add Month" button) are merged in too
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const EARLIEST_MONTH = {y:2024, m:11}; // Nov 2024
+
+function generateAllMonths() {
+  const now = new Date();
+  let endM = now.getMonth() + 1 + 12; // current month + 12 future months
+  let endY = now.getFullYear();
+  while (endM > 12) { endM -= 12; endY++; }
+
+  const months = [];
+  const seen = new Set();
+  let y = endY, m = endM;
+  while (y > EARLIEST_MONTH.y || (y === EARLIEST_MONTH.y && m >= EARLIEST_MONTH.m)) {
+    const key = `${y}-${String(m).padStart(2,'0')}`;
+    if (!seen.has(key)) { seen.add(key); months.push({ key, label: `${MONTH_NAMES[m-1]} ${y}` }); }
+    if (--m === 0) { m = 12; y--; }
+  }
+
+  // Merge any extra custom months saved by user
+  const extras = load('customMonths', []);
+  extras.forEach(ek => {
+    if (!seen.has(ek)) {
+      const [ey, em] = ek.split('-').map(Number);
+      seen.add(ek);
+      // Insert at correct position (sorted descending)
+      const newEntry = { key: ek, label: `${MONTH_NAMES[em-1]} ${ey}` };
+      let inserted = false;
+      for (let i = 0; i < months.length; i++) {
+        if (months[i].key < ek) { months.splice(i, 0, newEntry); inserted = true; break; }
+      }
+      if (!inserted) months.push(newEntry);
+    }
+  });
+  return months;
+}
+
+let allMonths = generateAllMonths();
+
+function addCustomMonth() {
+  const val = document.getElementById('customMonthPicker').value;
+  if (!val) { alert('Please pick a month'); return; }
+  const [y, m] = val.split('-').map(Number);
+  const key = `${y}-${String(m).padStart(2,'0')}`;
+  const extras = load('customMonths', []);
+  if (!extras.includes(key)) { extras.push(key); save('customMonths', extras); }
+  allMonths = generateAllMonths();
+  populateDropdowns();
+  renderLedger();
+  closeModal('addMonthModal');
+  alert(`✓ ${MONTH_NAMES[m-1]} ${y} added to month list!`);
+}
 
 // ── DEFAULT DATA (migrated from v2 + new TAJ event) ──────────────
-const DEFAULT_MONTH_TOTALS = {};
-const DEFAULT_DETAIL_ENTRIES = {};
+const DEFAULT_MONTH_TOTALS = {
+  "2026-04":{base:165994,  gst:29878.92, total:195872.92, paid:0, applyGst:true},
+  "2026-03":{base:67425,   gst:12136.50, total:79561.50,  paid:0, applyGst:true},
+  "2026-02":{base:123332,  gst:22199.76, total:145531.76, paid:0, applyGst:true},
+  "2026-01":{base:164474,  gst:29605.32, total:194079.32, paid:0, applyGst:true},
+  "2025-12":{base:77522,   gst:13953.96, total:91475.96,  paid:213851, applyGst:true},
+  "2025-11":{base:81487,   gst:14667.66, total:96154.66,  paid:181496, applyGst:true},
+  "2025-10":{base:194367,  gst:34986.06, total:229353.06, paid:172720, applyGst:true},
+  "2025-09":{base:141163,  gst:25409.34, total:166572.34, paid:0, applyGst:true},
+  "2025-08":{base:149661,  gst:26938.98, total:176599.98, paid:10000, applyGst:true},
+  "2025-07":{base:87628,   gst:15773.04, total:103401.04, paid:103401, applyGst:true},
+  "2025-06":{base:166942,  gst:30049.56, total:196991.56, paid:196992, applyGst:true},
+  "2025-05":{base:171031,  gst:30785.58, total:201816.58, paid:201780, applyGst:true},
+  "2025-04":{base:188621,  gst:33951.78, total:222572.78, paid:0, applyGst:true},
+  "2025-03":{base:214454.8,gst:38601.86, total:253056.66, paid:0, applyGst:true},
+  "2025-02":{base:201375,  gst:36247.50, total:237622.50, paid:0, applyGst:true},
+  "2025-01":{base:121503.84,gst:21870.69,total:143374.53, paid:0, applyGst:true},
+  "2024-12":{base:63822,   gst:11487.96, total:75309.96,  paid:50000, applyGst:true},
+  "2024-11":{base:173452,  gst:31221.36, total:204673.36, paid:50000, applyGst:true},
+};
+
+const DEFAULT_DETAIL_ENTRIES = {
+  "2026-04":[
+    {date:"2026-04-03",location:"BANQUET + COURTYARD",item:"SIDE PANELS",w:3,h:11,qty:2,rate:17,total:1122},
+    {date:null,location:null,item:"STANDEE",w:4,h:8,qty:2,rate:17,total:1088},
+    {date:null,location:null,item:"PHOTOBOOTH",w:8,h:8,qty:1,rate:17,total:1088},
+    {date:null,location:null,item:"LED WALL",w:18,h:10,qty:2,rate:110,total:39600},
+    {date:null,location:null,item:"PLATFORM FOR LED WALL",w:18,h:4,qty:1,rate:30,total:2160},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:3000},
+    {date:"2026-04-05",location:"BANQUET + COURTYARD",item:"LED WALL",w:16,h:8,qty:2,rate:110,total:28160},
+    {date:null,location:null,item:"RISER",w:16,h:4,qty:1,rate:30,total:1920},
+    {date:null,location:null,item:"BACKDROP",w:12,h:8,qty:1,rate:17,total:1632},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-04-05",location:"PLANET HOLLYWOOD",item:"PROJECT MASKING",w:null,h:null,qty:null,rate:null,total:4500},
+    {date:"2026-04-07",location:"MCA BOUNDARY",item:"LED WALL",w:16,h:8,qty:1,rate:110,total:14080},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-04-16",location:"MCA BANQUET",item:"BACKDROP",w:8,h:8,qty:2,rate:17,total:2176},
+    {date:null,location:null,item:"MASKING",w:4,h:10,qty:2,rate:17,total:1360},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-04-22",location:"IMPERIAL HALL, 1ST FLOOR, TAJ HOTEL, SANTACRUZ",item:"STAGE",w:16,h:8,qty:1,rate:30,total:3840},
+    {date:null,location:null,item:"LED WALL RISER",w:12,h:4,qty:1,rate:30,total:1440},
+    {date:null,location:null,item:"LED WALL",w:12,h:8,qty:1,rate:110,total:10560},
+    {date:null,location:null,item:"SIDE PANELS",w:2,h:9,qty:2,rate:17,total:612},
+    {date:null,location:null,item:"REGISTRATION BACKDROP",w:6,h:8,qty:1,rate:17,total:816},
+    {date:null,location:null,item:"TABLE FRONT",w:4,h:3,qty:4,rate:17,total:816},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1500},
+  ],
+  "2026-03":[
+    {date:"2026-03-04",location:"BANQUET",item:"RISER FOR LED",w:24,h:4,qty:1,rate:30,total:2880},
+    {date:null,location:null,item:"SIDE PANELS",w:6,h:13,qty:2,rate:17,total:2652},
+    {date:null,location:null,item:"BACKDROP",w:8,h:8,qty:1,rate:17,total:1088},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-03-11",location:"GOOGLY",item:"STANDEE",w:4,h:8,qty:2,rate:17,total:1088},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-03-17",location:"BOUNDARY",item:"BACKDROP",w:12,h:8,qty:1,rate:17,total:1632},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+    {date:"2026-03-27",location:"BANQUET",item:"LED WALL",w:16,h:8,qty:1,rate:110,total:14080},
+    {date:null,location:null,item:"RISER",w:16,h:4,qty:1,rate:30,total:1920},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1500},
+  ],
+  "2026-01":[
+    {date:"2026-01-01",location:"NOVOTEL",item:"STAGE",w:20,h:10,qty:1,rate:30,total:6000},
+    {date:null,location:null,item:"LED WALL",w:10,h:8,qty:2,rate:110,total:17600},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1500},
+    {date:"2026-01-17",location:"ITC PAREL",item:"LED WALL",w:16,h:8,qty:1,rate:110,total:14080},
+    {date:null,location:null,item:"STAGE",w:24,h:10,qty:1,rate:30,total:7200},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:3000},
+    {date:"2026-01-26",location:"BANQUET",item:"LED WALL",w:16,h:8,qty:1,rate:110,total:14080},
+    {date:null,location:null,item:"RISER",w:16,h:4,qty:1,rate:30,total:1920},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+  ],
+};
 
 const DEFAULT_RATE_CARD = [
   {item:'FLEX (STANDARD)',      rate:17,  type:'standard'},
@@ -566,6 +770,7 @@ async function pushToCloud(manual = false) {
     monthTotals,
     detailEntries,
     rateCard,
+    openingBalance,
     last_updated: Date.now()
   }, null, 2);
 
@@ -623,11 +828,13 @@ async function pullFromCloud() {
       monthTotals = content.monthTotals || {};
       detailEntries = content.detailEntries || {};
       if(content.rateCard) rateCard = content.rateCard;
+      if(content.openingBalance) openingBalance = content.openingBalance;
       
       const oldAuto = cloudAuto; cloudAuto = false;
       save('monthTotals', monthTotals);
       save('detailEntries', detailEntries);
       save('rateCard', rateCard);
+      save('openingBalance', openingBalance);
       cloudAuto = oldAuto;
       
       renderCards(); renderLedger(); renderAllEntries(); renderRates();
@@ -647,6 +854,11 @@ async function pullFromCloud() {
 let monthTotals   = load('monthTotals',   DEFAULT_MONTH_TOTALS);
 let detailEntries = load('detailEntries', DEFAULT_DETAIL_ENTRIES);
 let rateCard      = load('rateCard',      DEFAULT_RATE_CARD);
+
+// Opening balance — for Excel migration carry-forward
+// billed = total billed to Carnival BEFORE this app started (from old Excel records)
+// paid   = total already paid by Carnival BEFORE this app started
+let openingBalance = load('openingBalance', { billed: 0, paid: 0, note: '', migratedOn: '' });
 
 // ============================================================
 // INIT & MIGRATION
@@ -672,13 +884,25 @@ function init(){
 }
 
 function populateDropdowns(){
-  const monthOpts = allMonths.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthOpts = allMonths.map(m=>{
+    const isCurrent = m.key === currentKey;
+    const isFuture = m.key > currentKey;
+    const suffix = isCurrent ? ' ← Current' : (isFuture ? ' (Future)' : '');
+    return `<option value="${m.key}">${m.label}${suffix}</option>`;
+  }).join('');
   ['e_month','edit_month','p_month'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.innerHTML=monthOpts;
   });
+  // Default to current month in entry modal
+  ['e_month'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && allMonths.find(m=>m.key===currentKey)) el.value = currentKey;
+  });
   const fm = document.getElementById('filterMonth');
-  if(fm) fm.innerHTML = '<option value="">All Months</option>' + monthOpts;
+  if(fm) fm.innerHTML = '<option value="">All Months</option>' + allMonths.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');
 }
 
 // ============================================================
@@ -687,17 +911,34 @@ function populateDropdowns(){
 function renderCards(){
   let tb=0,tpaid=0,twgst=0;
   Object.values(monthTotals).forEach(m=>{tb+=m.base||0;twgst+=m.total||0;tpaid+=m.paid||0});
-  const bal=twgst-tpaid;
+
+  // Add opening balance (Excel migration carry-forward)
+  const ob = openingBalance;
+  const obBilled = ob.billed || 0;
+  const obPaid   = ob.paid   || 0;
+  const totalBilledWithOB = twgst + obBilled;
+  const totalPaidWithOB   = tpaid + obPaid;
+  const bal = totalBilledWithOB - totalPaidWithOB;
+
+  const obTag = obBilled > 0
+    ? `<div class="card-note" style="color:var(--accent);margin-top:4px">+₹${fmt(obBilled)} opening (Excel)</div>`
+    : '';
+  const obPaidTag = obPaid > 0
+    ? `<div class="card-note" style="color:var(--green);margin-top:4px">+₹${fmt(obPaid)} opening paid</div>`
+    : '';
+
   document.getElementById('statsCards').innerHTML=`
     <div class="card c1">
       <div class="card-label">Total Vendor Bill</div>
-      <div class="card-value">₹ ${fmt(twgst)}</div>
-      <div class="card-note">${allMonths.length} months tracked</div>
+      <div class="card-value">₹ ${fmt(totalBilledWithOB)}</div>
+      <div class="card-note">${allMonths.filter(m=>monthTotals[m.key]).length} months tracked</div>
+      ${obTag}
     </div>
     <div class="card c2">
       <div class="card-label">Total Paid</div>
-      <div class="card-value" style="color:var(--green)">₹ ${fmt(tpaid)}</div>
-      <div class="card-note">${twgst>0?Math.round(tpaid/twgst*100):0}% paid</div>
+      <div class="card-value" style="color:var(--green)">₹ ${fmt(totalPaidWithOB)}</div>
+      <div class="card-note">${totalBilledWithOB>0?Math.round(totalPaidWithOB/totalBilledWithOB*100):0}% paid</div>
+      ${obPaidTag}
     </div>
     <div class="card c3">
       <div class="card-label">Balance to Pay</div>
@@ -718,6 +959,26 @@ function renderLedger(){
   const s=document.getElementById('searchLedger').value.toLowerCase();
   const sf=document.getElementById('filterStatus').value;
   let rows='', tb=0, tpaid=0, tt=0;
+
+  // Opening balance banner
+  const ob = openingBalance;
+  let obBanner = '';
+  if (ob.billed > 0 || ob.paid > 0) {
+    const obBal = ob.billed - ob.paid;
+    obBanner = `
+      <div style="background:rgba(78,168,245,.09);border:1px solid rgba(78,168,245,.3);border-radius:11px;padding:13px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px">📂 Opening Balance (Excel Migration)</div>
+          <div style="font-size:13px;color:var(--muted)">${ob.note||'Pre-migration carry-forward'} ${ob.migratedOn?'· migrated '+fmtDate(ob.migratedOn):''}</div>
+        </div>
+        <div style="display:flex;gap:18px;font-family:'DM Mono',monospace;font-size:14px;align-items:center;flex-wrap:wrap">
+          <div><span style="color:var(--muted);font-size:11px">BILLED</span><br><span style="color:var(--accent);font-weight:700">₹ ${fmt(ob.billed)}</span></div>
+          <div><span style="color:var(--muted);font-size:11px">PAID</span><br><span style="color:var(--green);font-weight:700">₹ ${fmt(ob.paid)}</span></div>
+          <div><span style="color:var(--muted);font-size:11px">BALANCE</span><br><span style="color:${obBal>0?'var(--red)':'var(--green)'};font-weight:700">₹ ${fmt(Math.abs(obBal))}</span></div>
+          <button class="btn btn-ghost btn-sm" onclick="openObModal()">✏️ Edit</button>
+        </div>
+      </div>`;
+  }
 
   allMonths.forEach(m=>{
     if(s && !m.label.toLowerCase().includes(s)) return;
@@ -743,7 +1004,11 @@ function renderLedger(){
       <td class="amount ${balCls}">₹ ${fmt(Math.abs(bal))}</td>
       <td><span class="badge ${status}">${badge}</span></td>
       <td>
-        <button class="btn btn-success btn-sm" onclick="event.stopPropagation();quickPay('${m.key}')">+ Pay</button>
+        <div class="actions-cell" style="gap:5px;flex-wrap:nowrap">
+          <button class="btn btn-success btn-sm" onclick="event.stopPropagation();quickPay('${m.key}')" title="Record Payment">💳 Pay</button>
+          <button class="btn-icon" onclick="event.stopPropagation();openEditMonth('${m.key}')" title="Edit Month" style="color:var(--accent);border-color:rgba(240,165,0,.4)">✏️</button>
+          <button class="btn-icon" onclick="event.stopPropagation();deleteMonth('${m.key}')" title="Delete Entire Month" style="color:var(--red);border-color:rgba(224,92,58,.4)">🗑️</button>
+        </div>
       </td>
     </tr>`;
   });
@@ -759,9 +1024,9 @@ function renderLedger(){
     <td colspan="2"></td>
   </tr>`;
 
-  document.getElementById('ledgerView').innerHTML=`<table>
+  document.getElementById('ledgerView').innerHTML=`${obBanner}<table>
     <thead><tr>
-      <th>Month</th><th>Net Bill</th><th>GST (18%)</th><th>Total Bill</th><th>Amount Paid</th><th>Balance</th><th>Status</th><th></th>
+      <th>Month</th><th>Net Bill</th><th>GST (18%)</th><th>Total Bill</th><th>Amount Paid</th><th>Balance</th><th>Status</th><th>Actions</th>
     </tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
@@ -991,7 +1256,12 @@ function openAddModal(){
   document.getElementById('parseStatus').textContent='';
   document.getElementById('e_location').value='';
   document.getElementById('e_date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('e_month').value=allMonths[0].key;
+  // Default to current month
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const sel = document.getElementById('e_month');
+  if(sel && allMonths.find(m=>m.key===currentKey)) sel.value = currentKey;
+  else if(sel) sel.value = allMonths[0].key;
   addRow();
   document.getElementById('addModal').classList.add('open');
 }
@@ -1141,15 +1411,18 @@ function deleteEntry(mk,idx){
   if(!entries||!entries[idx])return;
   const total=entries[idx].total;
   entries.splice(idx,1);
-  if(!entries.length)delete detailEntries[mk];
-  if(monthTotals[mk]){
-    monthTotals[mk].base-=total;
-    monthTotals[mk].gst = monthTotals[mk].applyGst ? monthTotals[mk].base * GST_RATE : 0;
+  if(!entries.length){
+    // No entries left — wipe the entire month completely
+    delete detailEntries[mk];
+    delete monthTotals[mk];
+  } else if(monthTotals[mk]){
+    monthTotals[mk].base -= total;
+    if(monthTotals[mk].base < 0) monthTotals[mk].base = 0;
+    monthTotals[mk].gst   = monthTotals[mk].applyGst ? monthTotals[mk].base * GST_RATE : 0;
     monthTotals[mk].total = monthTotals[mk].base + monthTotals[mk].gst;
-    if(monthTotals[mk].base<=0)delete monthTotals[mk];
   }
-  save('monthTotals',monthTotals);save('detailEntries',detailEntries);
-  renderCards();renderLedger();renderAllEntries();
+  save('monthTotals',monthTotals); save('detailEntries',detailEntries);
+  renderCards(); renderLedger(); renderAllEntries();
   if(document.getElementById('detailView').style.display!=='none'){
     if(detailEntries[mk]) showDetail(mk); else closeDetail();
   }
@@ -1176,6 +1449,62 @@ function savePayment(){
 }
 
 // ============================================================
+// EDIT / DELETE MONTH
+// ============================================================
+function openEditMonth(mk){
+  const m = allMonths.find(x=>x.key===mk);
+  const d = monthTotals[mk]||{base:0,gst:0,total:0,paid:0,applyGst:false};
+  document.getElementById('em_key').value   = mk;
+  document.getElementById('editMonthLabel').textContent = m?.label || mk;
+  document.getElementById('em_base').value  = d.base||0;
+  document.getElementById('em_paid').value  = d.paid||0;
+  document.getElementById('em_gst').value   = d.applyGst ? 'yes' : 'no';
+  recalcEditMonth();
+  document.getElementById('editMonthModal').classList.add('open');
+}
+function recalcEditMonth(){
+  const base  = parseFloat(document.getElementById('em_base').value)||0;
+  const gstOn = document.getElementById('em_gst').value === 'yes';
+  const gst   = gstOn ? base * GST_RATE : 0;
+  const total = base + gst;
+  document.getElementById('em_preview').innerHTML =
+    `Base: <span style="color:var(--text)">₹ ${fmt(base)}</span> &nbsp;|&nbsp; ` +
+    `GST: <span style="color:var(--purple)">₹ ${fmt(gst)}</span> &nbsp;|&nbsp; ` +
+    `Total: <span style="color:var(--accent)">₹ ${fmt(total)}</span>`;
+}
+function saveEditMonth(){
+  const mk    = document.getElementById('em_key').value;
+  const base  = parseFloat(document.getElementById('em_base').value)||0;
+  const paid  = parseFloat(document.getElementById('em_paid').value)||0;
+  const gstOn = document.getElementById('em_gst').value === 'yes';
+  const gst   = gstOn ? base * GST_RATE : 0;
+  const total = base + gst;
+  if(!monthTotals[mk]) monthTotals[mk] = {base:0,gst:0,total:0,paid:0,applyGst:false};
+  monthTotals[mk].base     = base;
+  monthTotals[mk].gst      = gst;
+  monthTotals[mk].total    = total;
+  monthTotals[mk].paid     = paid;
+  monthTotals[mk].applyGst = gstOn;
+  // If base is zeroed out and no entries exist, clean up
+  if(base <= 0 && !(detailEntries[mk]?.length)) delete monthTotals[mk];
+  save('monthTotals', monthTotals);
+  closeModal('editMonthModal');
+  renderCards(); renderLedger(); renderAllEntries();
+  alert(`✓ ${allMonths.find(m=>m.key===mk)?.label||mk} updated`);
+}
+function deleteMonth(mk){
+  const label = allMonths.find(m=>m.key===mk)?.label || mk;
+  const entryCount = (detailEntries[mk]||[]).length;
+  if(!confirm(`Delete entire month "${label}"?\n\nThis will permanently remove:\n• ${entryCount} line entr${entryCount===1?'y':'ies'}\n• All billing & payment data for this month\n\nThis cannot be undone.`)) return;
+  delete detailEntries[mk];
+  delete monthTotals[mk];
+  save('monthTotals', monthTotals);
+  save('detailEntries', detailEntries);
+  if(document.getElementById('detailView').style.display !== 'none') closeDetail();
+  renderCards(); renderLedger(); renderAllEntries();
+}
+
+// ============================================================
 // WHATSAPP PARSER (IMPROVED)
 // ============================================================
 function parseWhatsApp(){
@@ -1191,13 +1520,17 @@ function parseWhatsApp(){
   const isEventMeta = l =>
     /^\d{1,2}[\.\s]*(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)/i.test(l) ||
     /KAAM\s*START|EVENT\s*ON\s*:|CLIENT\s*DRY\s*RUN|SET\s*UP|RAAT|SUBAH/i.test(l) ||
-    /^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l) ||
+    /NIGHT\s*SET\s*UP|READY\s*AT|\bNIGHT\b.*SET/i.test(l) ||
+    /^\d{1,2}\s*PM\b|^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l) ||
     /^(7|8|9|10|11|12)\.\d+\s*(AM|PM)/i.test(l);
 
   // Height-only like "1.6 FT HI" or "1 FT HI" — skip, just a stage height note
-  const isHeightOnly = l => /^\d+\.?\d*\s*FT\s*(HI|HIGH)\s*$/i.test(l);
+  const isHeightOnly = l => /^\d+\.?\d*\s*FT\s*(HI|HIGH)[.\s]*$/i.test(l);
   // Descriptor words (not billable items)
-  const isDescriptor = l => /^(\d+\s*STEPS?|GREY\s*CARPET|STEPS?|CLICKER\s+\d+|STRUCTURE|TRUSS)\s*$/i.test(l);
+  const isDescriptor = l =>
+    /^(\d+\s*STEPS?|GREY\s*CARPET|STEPS?|CLICKER\s+\d+|STRUCTURE|TRUSS)\s*$/i.test(l) ||
+    /^\(?\s*\d+\s*PCS\s*\)?\s*$/i.test(l) ||   // standalone "( 2 PCS )" quantity-only line
+    /^\(\s*(FRONT|BACK|SIDE|LEFT|RIGHT)\s*\)\s*$/i.test(l); // bracketed face labels like "( FRONT )"
   // Location line detection
   const isLocation = l =>
     /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|BOUNDARY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ)/i.test(l) &&
@@ -1208,8 +1541,18 @@ function parseWhatsApp(){
   const dimByRe = /^(\d+\.?\d*)\s*(?:by|x|BY|X)\s*(\d+\.?\d*)(?:\s*(FT\s*)?(HI|HIGH))?/i;
   // Dimension: "6 W 8 HI" or "6W 8HI"
   const dimWHRe = /^(\d+\.?\d*)\s*W\s+(\d+\.?\d*)\s*(FT\s*)?(HI|HIGH)?/i;
+  // Dimension: "16 W X 2 HI" — Width explicitly marked with W, then X separator
+  const dimWXRe = /^(\d+\.?\d*)\s*W\s*[X×x]\s*(\d+\.?\d*)(?:\s*(FT\s*)?(HI|HIGH))?/i;
   // Quantity prefix: "2 PCS SIDE PANELS", "4 PCS TABLE FRONT"
   const pcsRe = /^(\d+)\s*PCS\s+(.+)/i;
+
+  // Clean item names: strip noise like "..", "....*TAR YAAD SEY LANA", extra spaces
+  const cleanItemName = name => name
+    .replace(/\.{2,}.*/g, '')      // remove ".." and everything after it
+    .replace(/\*.*$/g, '')         // remove notes after *
+    .replace(/\s{2,}/g, ' ')      // collapse multiple spaces
+    .replace(/\s+[()]\s*/g, (m) => m.trim()) // tighten parentheses
+    .trim();
 
   const pushCurrent=()=>{
     if(currentItem&&currentItem.item&&currentItem.item.length>1){
@@ -1232,6 +1575,18 @@ function parseWhatsApp(){
       baseLocation=line;
       if(!document.getElementById('e_location').value.trim())
         document.getElementById('e_location').value=line;
+      continue;
+    }
+
+    // W X format: "16 W X 2 HI" (Width marked with W, then X separator)
+    const wxM=line.match(dimWXRe);
+    if(wxM){
+      const w=parseFloat(wxM[1]),h=parseFloat(wxM[2]);
+      if(currentItem&&currentItem.item){
+        currentItem.w=w;currentItem.h=h;
+        currentItem.total=w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        pushCurrent();
+      }
       continue;
     }
 
@@ -1263,7 +1618,7 @@ function parseWhatsApp(){
     const pcsM=line.match(pcsRe);
     if(pcsM){
       pushCurrent();
-      const itemName=pcsM[2].trim();
+      const itemName=cleanItemName(pcsM[2].trim());
       const matchedRate=findRate(itemName);
       currentItem={item:itemName.toUpperCase(),qty:parseInt(pcsM[1]),rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
       continue;
@@ -1272,8 +1627,11 @@ function parseWhatsApp(){
     // Plain text — treat as item name (skip very short or pure-number lines)
     if(line.length>=3 && !/^\d+$/.test(line)){
       pushCurrent();
-      const matchedRate=findRate(line);
-      currentItem={item:line.toUpperCase(),qty:1,rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
+      const cleanLine=cleanItemName(line);
+      if(cleanLine.length>=2){
+        const matchedRate=findRate(cleanLine);
+        currentItem={item:cleanLine.toUpperCase(),qty:1,rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
+      }
     }
   }
   pushCurrent();
@@ -1306,14 +1664,37 @@ function parseWhatsApp(){
 }
 
 function findRate(itemName){
-  const n=itemName.toUpperCase();
-  for(const r of rateCard){
-    if(n.includes(r.item)||r.item.includes(n)) return r.rate;
+  const n = itemName.toUpperCase().trim();
+
+  // TRANSPORT always first (fixed rate, no dimensions)
+  if (/\bTRANSPORT\b/i.test(n)) return 1000;
+
+  // FRAME always wins — even "FRAME FOR LED WALL RISER" → 17
+  // Must come BEFORE RISER because that item name contains both words
+  if (/\bFRAME\b/i.test(n)) return 17;
+
+  // RISER in any form: "RISER FOR LED WALL", "RISER FOR CAMERA", plain "RISER" → 25
+  // Must come BEFORE LED WALL check — "RISER FOR LED WALL" contains "LED WALL"!
+  if (/\bRISER\b/i.test(n)) return 25;
+
+  // PLATFORM (same category as riser) → 25
+  if (/\bPLATFORM\b/i.test(n)) return 25;
+
+  // Pure LED WALL (now safe — riser/frame/platform already caught above) → 110
+  if (/LED\s*WALL/i.test(n)) return 110;
+
+  // STAGE: pure stage → 30
+  // But "STAGE BRANDING" is just a flex/vinyl graphic on a stage face → 17
+  if (/^STAGE\b/i.test(n) && !/BRANDING|WRAP|GRAPHIC|PRINT|PANEL/i.test(n)) return 30;
+
+  // Custom rate-card items (PROJECTOR MASKING etc.)
+  for (const r of rateCard) {
+    if (r.type === 'custom' && n.includes(r.item.toUpperCase())) return r.rate;
   }
-  if(/LED\s*WALL/i.test(n)) return 110;
-  if(/STAGE|RISER|PLATFORM/i.test(n)) return 30;
-  if(/TRANSPORT/i.test(n)) return 1000;
-  return 17; // default flex rate
+
+  // Default → 17: BACKDROP, STANDEE, MASKING, BRANDING, FLEX, SIDE PANELS,
+  //               WELCOME STANDEE, FRAME, TABLE FRONT, REGISTRATION BACKDROP…
+  return 17;
 }
 
 function fillFromParsed(data){
@@ -1676,7 +2057,7 @@ function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString(
 // LOCAL JSON EXPORT / IMPORT
 // ============================================================
 function exportJSON() {
-  const data = { monthTotals, detailEntries, rateCard };
+  const data = { monthTotals, detailEntries, rateCard, openingBalance };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1696,11 +2077,13 @@ function importJSON(event) {
       monthTotals = content.monthTotals || {};
       detailEntries = content.detailEntries || {};
       if(content.rateCard) rateCard = content.rateCard;
+      if(content.openingBalance) openingBalance = content.openingBalance;
       const oldAuto = typeof cloudAuto !== 'undefined' ? cloudAuto : false;
       if(typeof cloudAuto !== 'undefined') cloudAuto = false;
       save('monthTotals', monthTotals);
       save('detailEntries', detailEntries);
       save('rateCard', rateCard);
+      save('openingBalance', openingBalance);
       if(typeof cloudAuto !== 'undefined') cloudAuto = oldAuto;
       renderCards(); renderLedger(); renderAllEntries(); renderRates();
       alert('✓ Data successfully imported from JSON!');
@@ -1710,6 +2093,45 @@ function importJSON(event) {
   reader.readAsText(file);
 }
 
+
+// ============================================================
+// OPENING BALANCE (Excel Migration)
+// ============================================================
+function openObModal() {
+  document.getElementById('ob_billed').value = openingBalance.billed || 0;
+  document.getElementById('ob_paid').value   = openingBalance.paid   || 0;
+  document.getElementById('ob_note').value   = openingBalance.note   || '';
+  document.getElementById('ob_date').value   = openingBalance.migratedOn || '';
+  updateObPreview();
+  document.getElementById('obModal').classList.add('open');
+}
+function updateObPreview() {
+  const billed = parseFloat(document.getElementById('ob_billed').value) || 0;
+  const paid   = parseFloat(document.getElementById('ob_paid').value)   || 0;
+  const bal    = billed - paid;
+  document.getElementById('ob_preview').innerHTML =
+    `Billed Before Migration: <span style="color:var(--accent)">₹ ${fmt(billed)}</span><br>
+     Already Paid (Excel): <span style="color:var(--green)">₹ ${fmt(paid)}</span><br>
+     Carry-Forward Balance: <span style="color:${bal>0?'var(--red)':'var(--green)'}">₹ ${fmt(Math.abs(bal))} ${bal>0?'(still owed)':'(cleared)'}</span>`;
+}
+function saveOpeningBalance() {
+  const billed = parseFloat(document.getElementById('ob_billed').value) || 0;
+  const paid   = parseFloat(document.getElementById('ob_paid').value)   || 0;
+  const note   = document.getElementById('ob_note').value.trim();
+  const date   = document.getElementById('ob_date').value;
+  openingBalance = { billed, paid, note, migratedOn: date };
+  save('openingBalance', openingBalance);
+  closeModal('obModal');
+  renderCards();
+  alert(`✓ Opening balance saved!\n₹${fmt(billed)} billed, ₹${fmt(paid)} paid before migration.`);
+}
+function clearOpeningBalance() {
+  if (!confirm('Clear all opening balance / migration data?')) return;
+  openingBalance = { billed: 0, paid: 0, note: '', migratedOn: '' };
+  save('openingBalance', openingBalance);
+  closeModal('obModal');
+  renderCards();
+}
 
 function updateSyncBanner(ts) {
   if (ts) localStorage.setItem(STORE_VER + 'last_sync', ts);
