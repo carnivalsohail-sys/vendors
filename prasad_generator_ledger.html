@@ -179,7 +179,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(251,19
   <div class="logo">
     <div class="logo-icon">⚡</div>
     <div>
-      <div class="logo-text">GENERATOR Vendor Ledger</div>
+      <div class="logo-text">PRASAD Vendor Ledger</div>
       <div class="logo-sub">Power Solutions</div>
     </div>
   </div>
@@ -271,7 +271,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(251,19
 Example:
 22 APRIL
 TAJ HOTEL
-25 KVA GENERATOR
+25 KVA PRASAD
 2 PCS
 DIESEL 40 LTR
 TRANSPORT"></textarea>
@@ -325,7 +325,7 @@ TRANSPORT"></textarea>
       <input type="text" id="edit_location" placeholder="e.g. TAJ HOTEL">
     </div>
     <div class="ew-grid">
-      <div class="fg"><label>Item *</label><input type="text" id="edit_item" placeholder="e.g. 25 KVA GENERATOR"></div>
+      <div class="fg"><label>Item *</label><input type="text" id="edit_item" placeholder="e.g. 25 KVA PRASAD"></div>
       <div class="fg"><label>Rate Card</label><select id="edit_rcard" onchange="applyRateCardEdit()"><option value="">Select…</option></select></div>
     </div>
     <div class="ew-5">
@@ -376,7 +376,7 @@ TRANSPORT"></textarea>
     <h3 id="rateModalTitle">Add Rate</h3>
     <div class="form-group">
       <label>Item Name *</label>
-      <input type="text" id="r_item" placeholder="e.g. 125 KVA GENERATOR">
+      <input type="text" id="r_item" placeholder="e.g. 125 KVA PRASAD">
     </div>
     <div class="form-group">
       <label>Rate (₹) *</label>
@@ -385,7 +385,7 @@ TRANSPORT"></textarea>
     <div class="form-group">
       <label>Category</label>
       <select id="r_type">
-        <option value="generator">Generator</option>
+        <option value="PRASAD">PRASAD</option>
         <option value="fuel">Fuel / Diesel</option>
         <option value="transport">Transport</option>
         <option value="custom">Custom / Operator</option>
@@ -449,7 +449,7 @@ TRANSPORT"></textarea>
     <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:13px;margin-bottom:18px;font-size:13px;color:var(--muted);line-height:1.6">
       <strong style="color:var(--blue)">Migrating from Excel?</strong> Enter the cumulative amounts
       from your old Excel records here. These will be added to your totals as a carry-forward balance,
-      so the balance due to the Generator vendor reflects the full picture — including amounts before this app started.
+      so the balance due to the PRASAD vendor reflects the full picture — including amounts before this app started.
     </div>
     <div class="fg" style="margin-bottom:12px">
       <label>Migration Date (When you started using this app)</label>
@@ -497,10 +497,10 @@ const DEFAULT_MONTH_TOTALS = {};
 const DEFAULT_DETAIL_ENTRIES = {};
 
 const DEFAULT_RATE_CARD = [
-  {item:'25 KVA GENERATOR',     rate:7000, type:'generator'},
-  {item:'30 KVA GENERATOR',     rate:8000, type:'generator'},
-  {item:'65 KVA GENERATOR',     rate:31600, type:'generator'},
-  {item:'125 KVA GENERATOR',    rate:11000, type:'generator'},
+  {item:'25 KVA PRASAD',     rate:7000, type:'PRASAD'},
+  {item:'30 KVA PRASAD',     rate:8000, type:'PRASAD'},
+  {item:'65 KVA PRASAD',     rate:31600, type:'PRASAD'},
+  {item:'125 KVA PRASAD',    rate:11000, type:'PRASAD'},
   {item:'NOC / PWD PERMIT',     rate:4000, type:'custom'},
   {item:'EXTRA HOURS',          rate:1000, type:'custom'},
   {item:'DIESEL EXTRA',         rate:100,  type:'fuel'},
@@ -906,7 +906,7 @@ function renderAllEntries(){
 // RATE CARD
 // ============================================================
 function renderRates(){
-  const typeColors={generator:'#fbbf24',fuel:'#3b82f6',transport:'#ef4444',custom:'#8b5cf6'};
+  const typeColors={PRASAD:'#fbbf24',fuel:'#3b82f6',transport:'#ef4444',custom:'#8b5cf6'};
   let rows=rateCard.map((r,i)=>`<tr>
     <td style="font-weight:600">${r.item}</td>
     <td class="amount accent">₹ ${fmt(r.rate)}</td>
@@ -929,7 +929,7 @@ function openRateModal(){
   document.getElementById('rateModalTitle').textContent='Add Rate';
   document.getElementById('r_item').value='';
   document.getElementById('r_rate').value='';
-  document.getElementById('r_type').value='generator';
+  document.getElementById('r_type').value='PRASAD';
   document.getElementById('r_edit_idx').value='';
   document.getElementById('rateModal').classList.add('open');
 }
@@ -996,7 +996,7 @@ function addRow(){
       ${n>1?`<button class="btn btn-danger btn-sm" onclick="removeRow(${n})">✕ Remove</button>`:''}
     </div>
     <div class="ew-grid">
-      <div class="fg"><label>Item Name *</label><input type="text" id="ri_item_${n}" placeholder="e.g. 25 KVA GENERATOR"></div>
+      <div class="fg"><label>Item Name *</label><input type="text" id="ri_item_${n}" placeholder="e.g. 25 KVA PRASAD"></div>
       <div class="fg"><label>Rate Card</label><select id="ri_rcard_${n}" onchange="applyRateCard(${n})"></select></div>
     </div>
     <div class="ew-5">
@@ -1189,7 +1189,7 @@ function parseWhatsApp(){
   const isLocation = l =>
     /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|BOUNDARY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ)/i.test(l) &&
     !/^\d/.test(l) &&
-    !/(KVA|KV|GENSET|GENERATOR|DIESEL|LTR|TRANSPORT|OPERATOR)/i.test(l);
+    !/(KVA|KV|GENSET|PRASAD|DIESEL|LTR|TRANSPORT|OPERATOR)/i.test(l);
 
   const pcsRe = /^(\d+)\s*(?:PCS|NOS)\s*(.+)?/i;
   const dieselRe = /(?:DIESEL|FUEL)\s*(?:EXTRA)?\s*(\d+)\s*(?:L|LTR|LITERS|LITRES)/i;
@@ -1214,8 +1214,8 @@ function parseWhatsApp(){
       continue;
     }
 
-    if (/^GENERATOR\s*(VAN)?$/i.test(line)) {
-      continue; // Skip standalone "GENERATOR VAN" so "25 KV" creates the item on the next line
+    if (/^PRASAD\s*(VAN)?$/i.test(line)) {
+      continue; // Skip standalone "PRASAD VAN" so "25 KV" creates the item on the next line
     }
 
     const dMatch = line.match(dieselRe);
@@ -1230,7 +1230,7 @@ function parseWhatsApp(){
     const pcsM=line.match(pcsRe);
     if(pcsM){
       pushCurrent();
-      const itemName=(pcsM[2]||"GENERATOR").trim();
+      const itemName=(pcsM[2]||"PRASAD").trim();
       const matchedRate=findRate(itemName);
       currentItem={item:itemName.toUpperCase(),qty:parseInt(pcsM[1]),rate:matchedRate,total:parseInt(pcsM[1])*matchedRate,diesel:0,location:baseLocation||null};
       continue;
@@ -1240,7 +1240,7 @@ function parseWhatsApp(){
     if(kMatch){
       pushCurrent();
       const matchedRate=findRate(line);
-      currentItem={item:kMatch[1]+' KVA GENERATOR',qty:1,rate:matchedRate,total:matchedRate,diesel:0,location:baseLocation||null, kva:kMatch[1]};
+      currentItem={item:kMatch[1]+' KVA PRASAD',qty:1,rate:matchedRate,total:matchedRate,diesel:0,location:baseLocation||null, kva:kMatch[1]};
       continue;
     }
 
