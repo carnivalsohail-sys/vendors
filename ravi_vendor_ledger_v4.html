@@ -7,7 +7,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAVI Vendor Ledger — Flex Production</title>
+<title>RAVI Vendor Ledger v5 — Flex Production</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -198,6 +198,8 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(240,16
     </div>
   </div>
   <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openObModal()" title="Opening Balance / Excel Migration" style="border-color:rgba(78,168,245,.5);color:var(--blue)">📂 <span>Opening Bal</span></button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('addMonthModal').classList.add('open')" title="Add future or custom month">📅 <span>Add Month</span></button>
     <button class="btn btn-ghost btn-sm" onclick="openCloudModal()">☁️ <span>Cloud Sync</span></button>
     <button class="btn btn-ghost btn-sm" onclick="exportJSON()">📤 <span>JSON</span></button>
     <label class="btn btn-ghost btn-sm" style="margin:0;cursor:pointer">📥 <span style="display:inline">Import</span><input type="file" style="display:none" accept=".json" onchange="importJSON(event)"></label>
@@ -501,6 +503,64 @@ REGISTARTION BACK DROP
   </div>
 </div>
 
+<!-- =========================================================
+     MODAL: OPENING BALANCE (Excel Migration)
+========================================================== -->
+<div id="obModal" class="modal-overlay">
+  <div class="modal" style="width:520px">
+    <h3>📂 Opening Balance — Excel Migration</h3>
+    <div style="background:rgba(78,168,245,.08);border:1px solid rgba(78,168,245,.3);border-radius:10px;padding:13px;margin-bottom:18px;font-size:13px;color:var(--muted);line-height:1.6">
+      <strong style="color:var(--blue)">Migrating from Excel?</strong> Enter the cumulative amounts
+      from your old Excel records here. These will be added to your totals as a carry-forward balance,
+      so the balance due to RAVI reflects the full picture — including amounts before this app started.
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Migration Date (When you started using this app)</label>
+      <input type="date" id="ob_date">
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Total Billed Before Migration (₹) — from Excel records</label>
+      <input type="number" id="ob_billed" placeholder="0" oninput="updateObPreview()">
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Total Already Paid Before Migration (₹) — from Excel records</label>
+      <input type="number" id="ob_paid" placeholder="0" oninput="updateObPreview()">
+    </div>
+    <div class="fg" style="margin-bottom:15px">
+      <label>Notes (optional)</label>
+      <input type="text" id="ob_note" placeholder="e.g. Data from Excel ledger Apr 2023 – Oct 2024">
+    </div>
+    <div style="background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.25);border-radius:9px;padding:13px;font-family:'DM Mono',monospace;font-size:13px;margin-bottom:16px;line-height:1.8" id="ob_preview">—</div>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-sm" onclick="clearOpeningBalance()">🗑️ Clear</button>
+      <button class="btn btn-ghost" onclick="closeModal('obModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveOpeningBalance()">💾 Save Opening Balance</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================
+     MODAL: ADD CUSTOM MONTH
+========================================================== -->
+<div id="addMonthModal" class="modal-overlay">
+  <div class="modal" style="width:380px">
+    <h3>📅 Add Month to Calendar</h3>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5">
+      The calendar auto-generates months from Nov 2024 through
+      <strong style="color:var(--accent)">12 months into the future</strong>.
+      Use this to add any month outside that range.
+    </div>
+    <div class="fg" style="margin-bottom:16px">
+      <label>Select Month</label>
+      <input type="month" id="customMonthPicker" style="background:var(--bg);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px;width:100%;outline:none">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('addMonthModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addCustomMonth()">➕ Add Month</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 
@@ -510,17 +570,60 @@ const GST_RATE = 0.18;
 const STORE_VER = 'rv4_';
 let rowCounter = 0;
 
-const allMonths = [
-  {key:'2026-04',label:'Apr 2026'},{key:'2026-03',label:'Mar 2026'},
-  {key:'2026-02',label:'Feb 2026'},{key:'2026-01',label:'Jan 2026'},
-  {key:'2025-12',label:'Dec 2025'},{key:'2025-11',label:'Nov 2025'},
-  {key:'2025-10',label:'Oct 2025'},{key:'2025-09',label:'Sep 2025'},
-  {key:'2025-08',label:'Aug 2025'},{key:'2025-07',label:'Jul 2025'},
-  {key:'2025-06',label:'Jun 2025'},{key:'2025-05',label:'May 2025'},
-  {key:'2025-04',label:'Apr 2025'},{key:'2025-03',label:'Mar 2025'},
-  {key:'2025-02',label:'Feb 2025'},{key:'2025-01',label:'Jan 2025'},
-  {key:'2024-12',label:'Dec 2024'},{key:'2024-11',label:'Nov 2024'},
-];
+// ── DYNAMIC MONTH GENERATION ──────────────────────────────────────
+// Generates months from Nov 2024 through current month + 12 months future
+// Stored custom months (from "Add Month" button) are merged in too
+const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const EARLIEST_MONTH = {y:2024, m:11}; // Nov 2024
+
+function generateAllMonths() {
+  const now = new Date();
+  let endM = now.getMonth() + 1 + 12; // current month + 12 future months
+  let endY = now.getFullYear();
+  while (endM > 12) { endM -= 12; endY++; }
+
+  const months = [];
+  const seen = new Set();
+  let y = endY, m = endM;
+  while (y > EARLIEST_MONTH.y || (y === EARLIEST_MONTH.y && m >= EARLIEST_MONTH.m)) {
+    const key = `${y}-${String(m).padStart(2,'0')}`;
+    if (!seen.has(key)) { seen.add(key); months.push({ key, label: `${MONTH_NAMES[m-1]} ${y}` }); }
+    if (--m === 0) { m = 12; y--; }
+  }
+
+  // Merge any extra custom months saved by user
+  const extras = load('customMonths', []);
+  extras.forEach(ek => {
+    if (!seen.has(ek)) {
+      const [ey, em] = ek.split('-').map(Number);
+      seen.add(ek);
+      // Insert at correct position (sorted descending)
+      const newEntry = { key: ek, label: `${MONTH_NAMES[em-1]} ${ey}` };
+      let inserted = false;
+      for (let i = 0; i < months.length; i++) {
+        if (months[i].key < ek) { months.splice(i, 0, newEntry); inserted = true; break; }
+      }
+      if (!inserted) months.push(newEntry);
+    }
+  });
+  return months;
+}
+
+let allMonths = generateAllMonths();
+
+function addCustomMonth() {
+  const val = document.getElementById('customMonthPicker').value;
+  if (!val) { alert('Please pick a month'); return; }
+  const [y, m] = val.split('-').map(Number);
+  const key = `${y}-${String(m).padStart(2,'0')}`;
+  const extras = load('customMonths', []);
+  if (!extras.includes(key)) { extras.push(key); save('customMonths', extras); }
+  allMonths = generateAllMonths();
+  populateDropdowns();
+  renderLedger();
+  closeModal('addMonthModal');
+  alert(`✓ ${MONTH_NAMES[m-1]} ${y} added to month list!`);
+}
 
 // ── DEFAULT DATA (migrated from v2 + new TAJ event) ──────────────
 const DEFAULT_MONTH_TOTALS = {
@@ -667,6 +770,7 @@ async function pushToCloud(manual = false) {
     monthTotals,
     detailEntries,
     rateCard,
+    openingBalance,
     last_updated: Date.now()
   }, null, 2);
 
@@ -724,11 +828,13 @@ async function pullFromCloud() {
       monthTotals = content.monthTotals || {};
       detailEntries = content.detailEntries || {};
       if(content.rateCard) rateCard = content.rateCard;
+      if(content.openingBalance) openingBalance = content.openingBalance;
       
       const oldAuto = cloudAuto; cloudAuto = false;
       save('monthTotals', monthTotals);
       save('detailEntries', detailEntries);
       save('rateCard', rateCard);
+      save('openingBalance', openingBalance);
       cloudAuto = oldAuto;
       
       renderCards(); renderLedger(); renderAllEntries(); renderRates();
@@ -748,6 +854,11 @@ async function pullFromCloud() {
 let monthTotals   = load('monthTotals',   DEFAULT_MONTH_TOTALS);
 let detailEntries = load('detailEntries', DEFAULT_DETAIL_ENTRIES);
 let rateCard      = load('rateCard',      DEFAULT_RATE_CARD);
+
+// Opening balance — for Excel migration carry-forward
+// billed = total billed to Carnival BEFORE this app started (from old Excel records)
+// paid   = total already paid by Carnival BEFORE this app started
+let openingBalance = load('openingBalance', { billed: 0, paid: 0, note: '', migratedOn: '' });
 
 // ============================================================
 // INIT & MIGRATION
@@ -773,13 +884,25 @@ function init(){
 }
 
 function populateDropdowns(){
-  const monthOpts = allMonths.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthOpts = allMonths.map(m=>{
+    const isCurrent = m.key === currentKey;
+    const isFuture = m.key > currentKey;
+    const suffix = isCurrent ? ' ← Current' : (isFuture ? ' (Future)' : '');
+    return `<option value="${m.key}">${m.label}${suffix}</option>`;
+  }).join('');
   ['e_month','edit_month','p_month'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.innerHTML=monthOpts;
   });
+  // Default to current month in entry modal
+  ['e_month'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el && allMonths.find(m=>m.key===currentKey)) el.value = currentKey;
+  });
   const fm = document.getElementById('filterMonth');
-  if(fm) fm.innerHTML = '<option value="">All Months</option>' + monthOpts;
+  if(fm) fm.innerHTML = '<option value="">All Months</option>' + allMonths.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');
 }
 
 // ============================================================
@@ -788,17 +911,34 @@ function populateDropdowns(){
 function renderCards(){
   let tb=0,tpaid=0,twgst=0;
   Object.values(monthTotals).forEach(m=>{tb+=m.base||0;twgst+=m.total||0;tpaid+=m.paid||0});
-  const bal=twgst-tpaid;
+
+  // Add opening balance (Excel migration carry-forward)
+  const ob = openingBalance;
+  const obBilled = ob.billed || 0;
+  const obPaid   = ob.paid   || 0;
+  const totalBilledWithOB = twgst + obBilled;
+  const totalPaidWithOB   = tpaid + obPaid;
+  const bal = totalBilledWithOB - totalPaidWithOB;
+
+  const obTag = obBilled > 0
+    ? `<div class="card-note" style="color:var(--accent);margin-top:4px">+₹${fmt(obBilled)} opening (Excel)</div>`
+    : '';
+  const obPaidTag = obPaid > 0
+    ? `<div class="card-note" style="color:var(--green);margin-top:4px">+₹${fmt(obPaid)} opening paid</div>`
+    : '';
+
   document.getElementById('statsCards').innerHTML=`
     <div class="card c1">
       <div class="card-label">Total Vendor Bill</div>
-      <div class="card-value">₹ ${fmt(twgst)}</div>
-      <div class="card-note">${allMonths.length} months tracked</div>
+      <div class="card-value">₹ ${fmt(totalBilledWithOB)}</div>
+      <div class="card-note">${allMonths.filter(m=>monthTotals[m.key]).length} months tracked</div>
+      ${obTag}
     </div>
     <div class="card c2">
       <div class="card-label">Total Paid</div>
-      <div class="card-value" style="color:var(--green)">₹ ${fmt(tpaid)}</div>
-      <div class="card-note">${twgst>0?Math.round(tpaid/twgst*100):0}% paid</div>
+      <div class="card-value" style="color:var(--green)">₹ ${fmt(totalPaidWithOB)}</div>
+      <div class="card-note">${totalBilledWithOB>0?Math.round(totalPaidWithOB/totalBilledWithOB*100):0}% paid</div>
+      ${obPaidTag}
     </div>
     <div class="card c3">
       <div class="card-label">Balance to Pay</div>
@@ -819,6 +959,26 @@ function renderLedger(){
   const s=document.getElementById('searchLedger').value.toLowerCase();
   const sf=document.getElementById('filterStatus').value;
   let rows='', tb=0, tpaid=0, tt=0;
+
+  // Opening balance banner
+  const ob = openingBalance;
+  let obBanner = '';
+  if (ob.billed > 0 || ob.paid > 0) {
+    const obBal = ob.billed - ob.paid;
+    obBanner = `
+      <div style="background:rgba(78,168,245,.09);border:1px solid rgba(78,168,245,.3);border-radius:11px;padding:13px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px">📂 Opening Balance (Excel Migration)</div>
+          <div style="font-size:13px;color:var(--muted)">${ob.note||'Pre-migration carry-forward'} ${ob.migratedOn?'· migrated '+fmtDate(ob.migratedOn):''}</div>
+        </div>
+        <div style="display:flex;gap:18px;font-family:'DM Mono',monospace;font-size:14px;align-items:center;flex-wrap:wrap">
+          <div><span style="color:var(--muted);font-size:11px">BILLED</span><br><span style="color:var(--accent);font-weight:700">₹ ${fmt(ob.billed)}</span></div>
+          <div><span style="color:var(--muted);font-size:11px">PAID</span><br><span style="color:var(--green);font-weight:700">₹ ${fmt(ob.paid)}</span></div>
+          <div><span style="color:var(--muted);font-size:11px">BALANCE</span><br><span style="color:${obBal>0?'var(--red)':'var(--green)'};font-weight:700">₹ ${fmt(Math.abs(obBal))}</span></div>
+          <button class="btn btn-ghost btn-sm" onclick="openObModal()">✏️ Edit</button>
+        </div>
+      </div>`;
+  }
 
   allMonths.forEach(m=>{
     if(s && !m.label.toLowerCase().includes(s)) return;
@@ -864,7 +1024,7 @@ function renderLedger(){
     <td colspan="2"></td>
   </tr>`;
 
-  document.getElementById('ledgerView').innerHTML=`<table>
+  document.getElementById('ledgerView').innerHTML=`${obBanner}<table>
     <thead><tr>
       <th>Month</th><th>Net Bill</th><th>GST (18%)</th><th>Total Bill</th><th>Amount Paid</th><th>Balance</th><th>Status</th><th>Actions</th>
     </tr></thead>
@@ -1096,7 +1256,12 @@ function openAddModal(){
   document.getElementById('parseStatus').textContent='';
   document.getElementById('e_location').value='';
   document.getElementById('e_date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('e_month').value=allMonths[0].key;
+  // Default to current month
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const sel = document.getElementById('e_month');
+  if(sel && allMonths.find(m=>m.key===currentKey)) sel.value = currentKey;
+  else if(sel) sel.value = allMonths[0].key;
   addRow();
   document.getElementById('addModal').classList.add('open');
 }
@@ -1892,7 +2057,7 @@ function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString(
 // LOCAL JSON EXPORT / IMPORT
 // ============================================================
 function exportJSON() {
-  const data = { monthTotals, detailEntries, rateCard };
+  const data = { monthTotals, detailEntries, rateCard, openingBalance };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1912,11 +2077,13 @@ function importJSON(event) {
       monthTotals = content.monthTotals || {};
       detailEntries = content.detailEntries || {};
       if(content.rateCard) rateCard = content.rateCard;
+      if(content.openingBalance) openingBalance = content.openingBalance;
       const oldAuto = typeof cloudAuto !== 'undefined' ? cloudAuto : false;
       if(typeof cloudAuto !== 'undefined') cloudAuto = false;
       save('monthTotals', monthTotals);
       save('detailEntries', detailEntries);
       save('rateCard', rateCard);
+      save('openingBalance', openingBalance);
       if(typeof cloudAuto !== 'undefined') cloudAuto = oldAuto;
       renderCards(); renderLedger(); renderAllEntries(); renderRates();
       alert('✓ Data successfully imported from JSON!');
@@ -1926,6 +2093,45 @@ function importJSON(event) {
   reader.readAsText(file);
 }
 
+
+// ============================================================
+// OPENING BALANCE (Excel Migration)
+// ============================================================
+function openObModal() {
+  document.getElementById('ob_billed').value = openingBalance.billed || 0;
+  document.getElementById('ob_paid').value   = openingBalance.paid   || 0;
+  document.getElementById('ob_note').value   = openingBalance.note   || '';
+  document.getElementById('ob_date').value   = openingBalance.migratedOn || '';
+  updateObPreview();
+  document.getElementById('obModal').classList.add('open');
+}
+function updateObPreview() {
+  const billed = parseFloat(document.getElementById('ob_billed').value) || 0;
+  const paid   = parseFloat(document.getElementById('ob_paid').value)   || 0;
+  const bal    = billed - paid;
+  document.getElementById('ob_preview').innerHTML =
+    `Billed Before Migration: <span style="color:var(--accent)">₹ ${fmt(billed)}</span><br>
+     Already Paid (Excel): <span style="color:var(--green)">₹ ${fmt(paid)}</span><br>
+     Carry-Forward Balance: <span style="color:${bal>0?'var(--red)':'var(--green)'}">₹ ${fmt(Math.abs(bal))} ${bal>0?'(still owed)':'(cleared)'}</span>`;
+}
+function saveOpeningBalance() {
+  const billed = parseFloat(document.getElementById('ob_billed').value) || 0;
+  const paid   = parseFloat(document.getElementById('ob_paid').value)   || 0;
+  const note   = document.getElementById('ob_note').value.trim();
+  const date   = document.getElementById('ob_date').value;
+  openingBalance = { billed, paid, note, migratedOn: date };
+  save('openingBalance', openingBalance);
+  closeModal('obModal');
+  renderCards();
+  alert(`✓ Opening balance saved!\n₹${fmt(billed)} billed, ₹${fmt(paid)} paid before migration.`);
+}
+function clearOpeningBalance() {
+  if (!confirm('Clear all opening balance / migration data?')) return;
+  openingBalance = { billed: 0, paid: 0, note: '', migratedOn: '' };
+  save('openingBalance', openingBalance);
+  closeModal('obModal');
+  renderCards();
+}
 
 function updateSyncBanner(ts) {
   if (ts) localStorage.setItem(STORE_VER + 'last_sync', ts);
