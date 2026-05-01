@@ -184,6 +184,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(251,19
     </div>
   </div>
   <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openObModal()" title="Opening Balance / Excel Migration" style="border-color:rgba(59,130,246,.5);color:var(--blue)">📂 <span>Opening Bal</span></button>
     <button class="btn btn-ghost btn-sm" onclick="openCloudModal()">☁️ <span>Cloud Sync</span></button>
     <button class="btn btn-ghost btn-sm" onclick="exportJSON()">📤 <span>JSON</span></button>
     <label class="btn btn-ghost btn-sm" style="margin:0;cursor:pointer">📥 <span style="display:inline">Import</span><input type="file" style="display:none" accept=".json" onchange="importJSON(event)"></label>
@@ -439,6 +440,42 @@ TRANSPORT"></textarea>
   </div>
 </div>
 
+<!-- =========================================================
+     MODAL: OPENING BALANCE (Excel Migration)
+========================================================== -->
+<div id="obModal" class="modal-overlay">
+  <div class="modal" style="width:520px">
+    <h3>📂 Opening Balance — Excel Migration</h3>
+    <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.3);border-radius:10px;padding:13px;margin-bottom:18px;font-size:13px;color:var(--muted);line-height:1.6">
+      <strong style="color:var(--blue)">Migrating from Excel?</strong> Enter the cumulative amounts
+      from your old Excel records here. These will be added to your totals as a carry-forward balance,
+      so the balance due to the Generator vendor reflects the full picture — including amounts before this app started.
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Migration Date (When you started using this app)</label>
+      <input type="date" id="ob_date">
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Total Billed Before Migration (₹) — from Excel records</label>
+      <input type="number" id="ob_billed" placeholder="0" oninput="updateObPreview()">
+    </div>
+    <div class="fg" style="margin-bottom:12px">
+      <label>Total Already Paid Before Migration (₹) — from Excel records</label>
+      <input type="number" id="ob_paid" placeholder="0" oninput="updateObPreview()">
+    </div>
+    <div class="fg" style="margin-bottom:15px">
+      <label>Notes (optional)</label>
+      <input type="text" id="ob_note" placeholder="e.g. Data from Excel ledger Jul 2024 – Jul 2025">
+    </div>
+    <div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.25);border-radius:9px;padding:13px;font-family:'DM Mono',monospace;font-size:13px;margin-bottom:16px;line-height:1.8" id="ob_preview">—</div>
+    <div class="modal-actions">
+      <button class="btn btn-danger btn-sm" onclick="clearOpeningBalance()">🗑️ Clear</button>
+      <button class="btn btn-ghost" onclick="closeModal('obModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveOpeningBalance()">💾 Save Opening Balance</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ============================================================
 
@@ -526,6 +563,7 @@ async function pushToCloud(manual = false) {
     monthTotals,
     detailEntries,
     rateCard,
+    openingBalance,
     last_updated: Date.now()
   }, null, 2);
 
@@ -583,11 +621,13 @@ async function pullFromCloud() {
       monthTotals = content.monthTotals || {};
       detailEntries = content.detailEntries || {};
       if(content.rateCard) rateCard = content.rateCard;
+      if(content.openingBalance) openingBalance = content.openingBalance;
       
       const oldAuto = cloudAuto; cloudAuto = false;
       save('monthTotals', monthTotals);
       save('detailEntries', detailEntries);
       save('rateCard', rateCard);
+      save('openingBalance', openingBalance);
       cloudAuto = oldAuto;
       
       renderCards(); renderLedger(); renderAllEntries(); renderRates();
@@ -607,6 +647,11 @@ async function pullFromCloud() {
 let monthTotals   = load('monthTotals',   DEFAULT_MONTH_TOTALS);
 let detailEntries = load('detailEntries', DEFAULT_DETAIL_ENTRIES);
 let rateCard      = load('rateCard',      DEFAULT_RATE_CARD);
+
+// Opening balance — for Excel migration carry-forward
+// billed = total billed to Carnival BEFORE this app started (from old Excel records)
+// paid   = total already paid by Carnival BEFORE this app started
+let openingBalance = load('openingBalance', { billed: 0, paid: 0, note: '', migratedOn: '' });
 
 // ============================================================
 // INIT
@@ -637,17 +682,34 @@ function populateDropdowns(){
 function renderCards(){
   let tb=0,tpaid=0;
   Object.values(monthTotals).forEach(m=>{tb+=m.base||0;tpaid+=m.paid||0});
-  const bal=tb-tpaid;
+
+  // Add opening balance (Excel migration carry-forward)
+  const ob = openingBalance;
+  const obBilled = ob.billed || 0;
+  const obPaid   = ob.paid   || 0;
+  const totalBilledWithOB = tb + obBilled;
+  const totalPaidWithOB   = tpaid + obPaid;
+  const bal = totalBilledWithOB - totalPaidWithOB;
+
+  const obTag = obBilled > 0
+    ? `<div class="card-note" style="color:var(--accent);margin-top:4px">+₹${fmt(obBilled)} opening (Excel)</div>`
+    : '';
+  const obPaidTag = obPaid > 0
+    ? `<div class="card-note" style="color:var(--green);margin-top:4px">+₹${fmt(obPaid)} opening paid</div>`
+    : '';
+
   document.getElementById('statsCards').innerHTML=`
     <div class="card c1">
       <div class="card-label">Total Vendor Bill</div>
-      <div class="card-value">₹ ${fmt(tb)}</div>
+      <div class="card-value">₹ ${fmt(totalBilledWithOB)}</div>
       <div class="card-note">${Object.keys(monthTotals).length} months tracked</div>
+      ${obTag}
     </div>
     <div class="card c2">
       <div class="card-label">Total Paid</div>
-      <div class="card-value" style="color:var(--green)">₹ ${fmt(tpaid)}</div>
-      <div class="card-note">${tb>0?Math.round(tpaid/tb*100):0}% paid</div>
+      <div class="card-value" style="color:var(--green)">₹ ${fmt(totalPaidWithOB)}</div>
+      <div class="card-note">${totalBilledWithOB>0?Math.round(totalPaidWithOB/totalBilledWithOB*100):0}% paid</div>
+      ${obPaidTag}
     </div>
     <div class="card c3">
       <div class="card-label">Balance to Pay</div>
@@ -663,6 +725,26 @@ function renderLedger(){
   const s=document.getElementById('searchLedger').value.toLowerCase();
   const sf=document.getElementById('filterStatus').value;
   let rows='', tt=0, tpaid=0;
+
+  // Opening balance banner
+  const ob = openingBalance;
+  let obBanner = '';
+  if (ob.billed > 0 || ob.paid > 0) {
+    const obBal = ob.billed - ob.paid;
+    obBanner = `
+      <div style="background:rgba(59,130,246,.09);border:1px solid rgba(59,130,246,.3);border-radius:11px;padding:13px 18px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--blue);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:5px">📂 Opening Balance (Excel Migration)</div>
+          <div style="font-size:13px;color:var(--muted)">${ob.note||'Pre-migration carry-forward'} ${ob.migratedOn?'· migrated '+fmtDate(ob.migratedOn):''}</div>
+        </div>
+        <div style="display:flex;gap:18px;font-family:'DM Mono',monospace;font-size:14px;align-items:center;flex-wrap:wrap">
+          <div><span style="color:var(--muted);font-size:11px">BILLED</span><br><span style="color:var(--accent);font-weight:700">₹ ${fmt(ob.billed)}</span></div>
+          <div><span style="color:var(--muted);font-size:11px">PAID</span><br><span style="color:var(--green);font-weight:700">₹ ${fmt(ob.paid)}</span></div>
+          <div><span style="color:var(--muted);font-size:11px">BALANCE</span><br><span style="color:${obBal>0?'var(--red)':'var(--green)'};font-weight:700">₹ ${fmt(Math.abs(obBal))}</span></div>
+          <button class="btn btn-ghost btn-sm" onclick="openObModal()">✏️ Edit</button>
+        </div>
+      </div>`;
+  }
 
   allMonths.forEach(m=>{
     if(s && !m.label.toLowerCase().includes(s)) return;
@@ -696,7 +778,7 @@ function renderLedger(){
     <td colspan="2"></td>
   </tr>`;
 
-  document.getElementById('ledgerView').innerHTML=`<table>
+  document.getElementById('ledgerView').innerHTML=`${obBanner}<table>
     <thead><tr>
       <th>Month</th><th>Net Bill</th><th>Amount Paid</th><th>Balance</th><th>Status</th><th></th>
     </tr></thead>
@@ -1472,7 +1554,7 @@ function fmtDate(d){if(!d)return'—';try{return new Date(d).toLocaleDateString(
 // LOCAL JSON EXPORT / IMPORT
 // ============================================================
 function exportJSON() {
-  const data = { monthTotals, detailEntries, rateCard };
+  const data = { monthTotals, detailEntries, rateCard, openingBalance };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1492,11 +1574,13 @@ function importJSON(event) {
       monthTotals = content.monthTotals || {};
       detailEntries = content.detailEntries || {};
       if(content.rateCard) rateCard = content.rateCard;
+      if(content.openingBalance) openingBalance = content.openingBalance;
       const oldAuto = typeof cloudAuto !== 'undefined' ? cloudAuto : false;
       if(typeof cloudAuto !== 'undefined') cloudAuto = false;
       save('monthTotals', monthTotals);
       save('detailEntries', detailEntries);
       save('rateCard', rateCard);
+      save('openingBalance', openingBalance);
       if(typeof cloudAuto !== 'undefined') cloudAuto = oldAuto;
       renderCards(); renderLedger(); renderAllEntries(); renderRates();
       alert('✓ Data successfully imported from JSON!');
@@ -1506,6 +1590,47 @@ function importJSON(event) {
   reader.readAsText(file);
 }
 
+
+// ============================================================
+// OPENING BALANCE (Excel Migration)
+// ============================================================
+function openObModal() {
+  document.getElementById('ob_billed').value = openingBalance.billed || 0;
+  document.getElementById('ob_paid').value   = openingBalance.paid   || 0;
+  document.getElementById('ob_note').value   = openingBalance.note   || '';
+  document.getElementById('ob_date').value   = openingBalance.migratedOn || '';
+  updateObPreview();
+  document.getElementById('obModal').classList.add('open');
+}
+function updateObPreview() {
+  const billed = parseFloat(document.getElementById('ob_billed').value) || 0;
+  const paid   = parseFloat(document.getElementById('ob_paid').value)   || 0;
+  const bal    = billed - paid;
+  document.getElementById('ob_preview').innerHTML =
+    `Billed Before Migration: <span style="color:var(--accent)">₹ ${fmt(billed)}</span><br>
+     Already Paid (Excel): <span style="color:var(--green)">₹ ${fmt(paid)}</span><br>
+     Carry-Forward Balance: <span style="color:${bal>0?'var(--red)':'var(--green)'}">₹ ${fmt(Math.abs(bal))} ${bal>0?'(still owed)':'(cleared)'}</span>`;
+}
+function saveOpeningBalance() {
+  const billed = parseFloat(document.getElementById('ob_billed').value) || 0;
+  const paid   = parseFloat(document.getElementById('ob_paid').value)   || 0;
+  const note   = document.getElementById('ob_note').value.trim();
+  const date   = document.getElementById('ob_date').value;
+  openingBalance = { billed, paid, note, migratedOn: date };
+  save('openingBalance', openingBalance);
+  closeModal('obModal');
+  renderCards();
+  renderLedger();
+  alert(`✓ Opening balance saved!\n₹${fmt(billed)} billed, ₹${fmt(paid)} paid before migration.`);
+}
+function clearOpeningBalance() {
+  if (!confirm('Clear all opening balance / migration data?')) return;
+  openingBalance = { billed: 0, paid: 0, note: '', migratedOn: '' };
+  save('openingBalance', openingBalance);
+  closeModal('obModal');
+  renderCards();
+  renderLedger();
+}
 
 function updateSyncBanner(ts) {
   if (ts) localStorage.setItem(STORE_VER + 'last_sync', ts);
