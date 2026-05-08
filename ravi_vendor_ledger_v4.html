@@ -1306,8 +1306,21 @@ function calcRow(n){
   const w=parseFloat(document.getElementById(`ri_w_${n}`)?.value)||0;
   const h=parseFloat(document.getElementById(`ri_h_${n}`)?.value)||0;
   const qty=parseFloat(document.getElementById(`ri_qty_${n}`)?.value)||1;
+  const itemInput=document.getElementById(`ri_item_${n}`);
+  const rateInput=document.getElementById(`ri_rate_${n}`);
+  let itemName = '';
+  if(itemInput && rateInput && typeof getDynamicRate === 'function') {
+    itemName = itemInput.value;
+    const autoRate = getDynamicRate(itemName, parseFloat(rateInput.value)||0, w, h);
+    if(autoRate !== parseFloat(rateInput.value)||0) rateInput.value = autoRate;
+  }
   const rate=parseFloat(document.getElementById(`ri_rate_${n}`)?.value)||0;
-  const t=w&&h?w*h*qty*rate:0;
+  let t = 0;
+  if (/\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(itemName)) {
+    t = qty * rate;
+  } else {
+    t = w&&h ? w*h*qty*rate : 0;
+  }
   if(t>0) document.getElementById(`ri_total_${n}`).value=t;
   document.getElementById(`ri_pill_${n}`).textContent=`₹ ${fmt(t)}`;
   updateGrandTotal();
@@ -1374,8 +1387,21 @@ function calcEdit(){
   const w=parseFloat(document.getElementById('edit_w').value)||0;
   const h=parseFloat(document.getElementById('edit_h').value)||0;
   const qty=parseFloat(document.getElementById('edit_qty').value)||1;
+  const itemInput=document.getElementById('edit_item');
+  const rateInput=document.getElementById('edit_rate');
+  let itemName = '';
+  if(itemInput && rateInput && typeof getDynamicRate === 'function') {
+    itemName = itemInput.value;
+    const autoRate = getDynamicRate(itemName, parseFloat(rateInput.value)||0, w, h);
+    if(autoRate !== parseFloat(rateInput.value)||0) rateInput.value = autoRate;
+  }
   const rate=parseFloat(document.getElementById('edit_rate').value)||0;
-  const t=w&&h?w*h*qty*rate:0;
+  let t = 0;
+  if (/\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(itemName)) {
+    t = qty * rate;
+  } else {
+    t = w&&h ? w*h*qty*rate : 0;
+  }
   if(t>0) document.getElementById('edit_total').value=t;
 }
 function saveEdit(){
@@ -1556,7 +1582,12 @@ function parseWhatsApp(){
 
   const pushCurrent=()=>{
     if(currentItem&&currentItem.item&&currentItem.item.length>1){
-      parsed.push({...currentItem});
+      if(!currentItem.pushed){
+        if(/\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(currentItem.item)) {
+          currentItem.total = (currentItem.qty||1) * (currentItem.rate||0);
+        }
+        parsed.push({...currentItem});
+      }
       currentItem=null;
     }
   };
@@ -1583,9 +1614,10 @@ function parseWhatsApp(){
     if(wxM){
       const w=parseFloat(wxM[1]),h=parseFloat(wxM[2]);
       if(currentItem&&currentItem.item){
-        currentItem.w=w;currentItem.h=h;
-        currentItem.total=w*h*(currentItem.qty||1)*(currentItem.rate||17);
-        pushCurrent();
+        if(typeof getDynamicRate === 'function') currentItem.rate = getDynamicRate(currentItem.item, currentItem.rate, w, h);
+        const t = /\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(currentItem.item) ? (currentItem.qty||1)*(currentItem.rate||0) : w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        parsed.push({...currentItem,w,h,total:t});
+        currentItem.pushed=true;
       }
       continue;
     }
@@ -1595,9 +1627,10 @@ function parseWhatsApp(){
     if(whM){
       const w=parseFloat(whM[1]),h=parseFloat(whM[2]);
       if(currentItem&&currentItem.item){
-        currentItem.w=w;currentItem.h=h;
-        currentItem.total=w*h*(currentItem.qty||1)*(currentItem.rate||17);
-        pushCurrent();
+        if(typeof getDynamicRate === 'function') currentItem.rate = getDynamicRate(currentItem.item, currentItem.rate, w, h);
+        const t = /\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(currentItem.item) ? (currentItem.qty||1)*(currentItem.rate||0) : w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        parsed.push({...currentItem,w,h,total:t});
+        currentItem.pushed=true;
       }
       continue;
     }
@@ -1607,30 +1640,55 @@ function parseWhatsApp(){
     if(dimM){
       const w=parseFloat(dimM[1]),h=parseFloat(dimM[2]);
       if(currentItem&&currentItem.item){
-        currentItem.w=w;currentItem.h=h;
-        currentItem.total=w*h*(currentItem.qty||1)*(currentItem.rate||17);
-        pushCurrent();
+        if(typeof getDynamicRate === 'function') currentItem.rate = getDynamicRate(currentItem.item, currentItem.rate, w, h);
+        const t = /\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(currentItem.item) ? (currentItem.qty||1)*(currentItem.rate||0) : w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        parsed.push({...currentItem,w,h,total:t});
+        currentItem.pushed=true;
       }
       continue;
     }
 
+    // Check for inline dimension at the end of the line (e.g. "FRAME SIZE 9 by 8 hi")
+    let inlineW = null, inlineH = null;
+    let textToProcess = line;
+    const inlineMatch = textToProcess.match(/^(.*?)\s+(\d+\.?\d*)\s*(?:by|x|w)\s*(?:x\s*)?(\d+\.?\d*)(?:\s*(?:ft\s*)?(?:hi|high))?$/i);
+    if(inlineMatch && inlineMatch[1].trim().length >= 2 && !/^\d+$/.test(inlineMatch[1].trim())) {
+      textToProcess = inlineMatch[1].trim();
+      inlineW = parseFloat(inlineMatch[2]);
+      inlineH = parseFloat(inlineMatch[3]);
+    }
+
     // PCS prefix: "4 PCS TABLE FRONT"
-    const pcsM=line.match(pcsRe);
+    const pcsM=textToProcess.match(pcsRe);
     if(pcsM){
       pushCurrent();
       const itemName=cleanItemName(pcsM[2].trim());
-      const matchedRate=findRate(itemName);
+      const matchedRate=findRate(itemName, baseLocation);
       currentItem={item:itemName.toUpperCase(),qty:parseInt(pcsM[1]),rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
+      if(inlineW && inlineH) {
+         currentItem.w = inlineW; currentItem.h = inlineH;
+         if(typeof getDynamicRate === 'function') currentItem.rate = getDynamicRate(currentItem.item, currentItem.rate, inlineW, inlineH);
+         currentItem.total = /\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(currentItem.item) ? (currentItem.qty||1)*(currentItem.rate||0) : inlineW * inlineH * currentItem.qty * currentItem.rate;
+         parsed.push({...currentItem});
+         currentItem.pushed = true;
+      }
       continue;
     }
 
     // Plain text — treat as item name (skip very short or pure-number lines)
-    if(line.length>=3 && !/^\d+$/.test(line)){
+    if(textToProcess.length>=3 && !/^\d+$/.test(textToProcess)){
       pushCurrent();
-      const cleanLine=cleanItemName(line);
+      const cleanLine=cleanItemName(textToProcess);
       if(cleanLine.length>=2){
-        const matchedRate=findRate(cleanLine);
+        const matchedRate=findRate(cleanLine, baseLocation);
         currentItem={item:cleanLine.toUpperCase(),qty:1,rate:matchedRate,w:null,h:null,total:0,location:baseLocation||null};
+        if(inlineW && inlineH) {
+           currentItem.w = inlineW; currentItem.h = inlineH;
+           if(typeof getDynamicRate === 'function') currentItem.rate = getDynamicRate(currentItem.item, currentItem.rate, inlineW, inlineH);
+           currentItem.total = /\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(currentItem.item) ? (currentItem.qty||1)*(currentItem.rate||0) : inlineW * inlineH * currentItem.qty * currentItem.rate;
+           parsed.push({...currentItem});
+           currentItem.pushed = true;
+        }
       }
     }
   }
@@ -1663,11 +1721,21 @@ function parseWhatsApp(){
   document.getElementById('parseResult').style.display='block';
 }
 
-function findRate(itemName){
+function findRate(itemName, loc = ''){
   const n = itemName.toUpperCase().trim();
+  const l = (loc || '').toUpperCase().trim();
 
   // TRANSPORT always first (fixed rate, no dimensions)
-  if (/\bTRANSPORT\b/i.test(n)) return 1000;
+  if (/\bTRANSPORT\b/i.test(n)) {
+    if (/\bOUTSTATION\b/i.test(n)) return 3000;
+    return 1000;
+  }
+
+  // PROJECTOR MASKING (Fixed Rate)
+  if (/\bPROJECTOR\b/i.test(n)) {
+    if (/\bTHANE\b/i.test(l)) return 4500;
+    return 2200;
+  }
 
   // FRAME always wins — even "FRAME FOR LED WALL RISER" → 17
   // Must come BEFORE RISER because that item name contains both words
@@ -1697,6 +1765,15 @@ function findRate(itemName){
   return 17;
 }
 
+function getDynamicRate(itemName, currentRate, w, h) {
+  if (!itemName || !w || !h) return currentRate;
+  const n = itemName.toUpperCase();
+  if (/^STAGE\b/i.test(n) && !/BRANDING|WRAP|GRAPHIC|PRINT|PANEL/i.test(n)) {
+    return (w * h <= 96) ? 25 : 30;
+  }
+  return currentRate;
+}
+
 function fillFromParsed(data){
   document.getElementById('entryRows').innerHTML='';
   rowCounter=0;
@@ -1708,6 +1785,10 @@ function fillFromParsed(data){
     document.getElementById(`ri_h_${n}`).value=item.h||'';
     document.getElementById(`ri_qty_${n}`).value=item.qty||1;
     document.getElementById(`ri_rate_${n}`).value=item.rate||17;
+    
+    const rcard = document.getElementById(`ri_rcard_${n}`);
+    if (rcard) rcard.value = item.rate || 17;
+    
     calcRow(n);
   });
   document.getElementById('parseStatus').textContent=`✓ ${data.length} item${data.length>1?'s':''} filled into form`;
