@@ -481,11 +481,11 @@ TRANSPORT"></textarea>
 
 // CONSTANTS
 // ============================================================
-const STORE_VER = 'gen_v1_';
+const STORE_VER = 'prasad_gen_v1_';
 let rowCounter = 0;
 
 const allMonths = [
-  {key:'2026-04',label:'Apr 2026'},{key:'2026-03',label:'Mar 2026'},
+  {key:'2026-05',label:'May 2026'},{key:'2026-04',label:'Apr 2026'},{key:'2026-03',label:'Mar 2026'},
   {key:'2026-02',label:'Feb 2026'},{key:'2026-01',label:'Jan 2026'},
   {key:'2025-12',label:'Dec 2025'},{key:'2025-11',label:'Nov 2025'},
   {key:'2025-10',label:'Oct 2025'},{key:'2025-09',label:'Sep 2025'},
@@ -1176,6 +1176,20 @@ function parseWhatsApp(){
     return l.replace(/\t+/g,' ').trim();
   }).filter(Boolean);
 
+  // Auto-detect month from "EVENT ON : 9 MAY" and set the month dropdown
+  const _mNames={JANUARY:'01',FEBRUARY:'02',MARCH:'03',APRIL:'04',MAY:'05',JUNE:'06',
+    JULY:'07',AUGUST:'08',SEPTEMBER:'09',OCTOBER:'10',NOVEMBER:'11',DECEMBER:'12',
+    JAN:'01',FEB:'02',MAR:'03',APR:'04',JUN:'06',JUL:'07',AUG:'08',SEP:'09',OCT:'10',NOV:'11',DEC:'12'};
+  const _evtM=raw.match(/EVENT\s*ON\s*[:\-]?\s*\d{1,2}\s+(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)/i);
+  if(_evtM){
+    const _mNum=_mNames[_evtM[1].toUpperCase()];
+    if(_mNum){
+      const _mk=`${new Date().getFullYear()}-${_mNum}`;
+      const _sel=document.getElementById('e_month');
+      if(_sel&&[..._sel.options].some(o=>o.value===_mk)) _sel.value=_mk;
+    }
+  }
+
   const parsed=[];
   let currentItem=null;
   let baseLocation=document.getElementById('e_location').value.trim();
@@ -1214,8 +1228,8 @@ function parseWhatsApp(){
       continue;
     }
 
-    if (/^PRASAD\s*(VAN)?$/i.test(line)) {
-      continue; // Skip standalone "PRASAD VAN" so "25 KV" creates the item on the next line
+    if (/^(GENERATOR|PRASAD)\s*(VAN)?$/i.test(line)) {
+      continue; // Skip standalone "GENERATOR VAN" / "PRASAD VAN" so "25 KV" creates the item on the next line
     }
 
     const dMatch = line.match(dieselRe);
