@@ -1058,7 +1058,14 @@ window.currentDetailMk = mk;
     if(e.location) cLoc=e.location;
     const gk=`${cDate}|${cLoc}`;
     if(gk!==lastGrp && (e.date||e.location)){
-      rows+=`<tr class="group-hdr"><td colspan="7">${fmtDate(cDate)} — ${cLoc||''}</td></tr>`;
+      const _enc=encodeURIComponent(gk);
+      rows+=`<tr class="group-hdr">
+        <td colspan="5" style="vertical-align:middle">${fmtDate(cDate)} — ${cLoc||''}</td>
+        <td style="text-align:right;padding:5px 10px;vertical-align:middle;background:var(--surface2)">
+          <button class="btn btn-ghost btn-sm" style="font-size:11px;padding:3px 10px;border-color:rgba(240,165,0,.5);color:var(--accent);white-space:nowrap"
+            onclick="event.stopPropagation();openGroupEdit('${mk}','${_enc}')">✏️ Edit Group</button>
+        </td>
+      </tr>`;
       lastGrp=gk;
     }
     const dim=(e.w&&e.h)?`${e.w} × ${e.h}`:'—';
@@ -2282,102 +2289,6 @@ let _geMonth = '';
 let _geOrigGroupKey = '';
 let _geRowCounter = 0;
 
-// ── Override showDetail to inject "✏️ Edit Group" button ──────
-const _origShowDetail = window.showDetail;
-window.showDetail = function(mk) {
-  const m    = allMonths.find(x => x.key === mk);
-  const d    = monthTotals[mk] || {base:0,gst:0,total:0,paid:0,applyGst:false};
-  const entries = detailEntries[mk] || [];
-
-  document.getElementById('detailTitle').textContent = `${m?.label||mk} — Detail Entries`;
-  window.currentDetailMk = mk;
-
-  // Inject month-level export buttons once
-  const actionsDiv = document.querySelector('#detailView .detail-hdr > div:nth-child(2)');
-  if (actionsDiv && !document.getElementById('m-export-xls')) {
-    actionsDiv.insertAdjacentHTML('afterbegin',
-      '<button id="m-export-xls" class="btn btn-ghost btn-sm" onclick="exportExcel(window.currentDetailMk)">📊 Month Excel</button>' +
-      '<button id="m-export-pdf" class="btn btn-ghost btn-sm" onclick="exportPDF(window.currentDetailMk)">📄 Month PDF</button>');
-  }
-
-  const cb = document.getElementById('gstToggle');
-  cb.checked = d.applyGst;
-  cb.setAttribute('onchange', `toggleGst('${mk}')`);
-
-  let rows = '', cDate = null, cLoc = null, lastGrp = '';
-
-  entries.forEach((e, i) => {
-    if (e.date)     cDate = e.date;
-    if (e.location) cLoc  = e.location;
-    const gk = `${cDate}|${cLoc}`;
-
-    if (gk !== lastGrp && (e.date || e.location)) {
-      const enc = encodeURIComponent(gk);
-      // Group header — spans 5 columns, last column has Edit Group btn
-      rows += `<tr class="group-hdr">
-        <td colspan="5" style="vertical-align:middle">${fmtDate(cDate)} — ${cLoc||''}</td>
-        <td style="text-align:right;background:var(--surface2);padding:6px 10px;vertical-align:middle">
-          <button class="btn btn-ghost btn-sm"
-            style="font-size:11px;padding:4px 10px;border-color:rgba(240,165,0,.45);color:var(--accent);white-space:nowrap"
-            onclick="event.stopPropagation();openGroupEdit('${mk}','${enc}')">
-            ✏️ Edit Group
-          </button>
-        </td>
-      </tr>`;
-      lastGrp = gk;
-    }
-
-    const dim = (e.w && e.h) ? `${e.w} × ${e.h}` : '—';
-    rows += `<tr>
-      <td style="padding-left:22px;font-weight:500">${e.item}</td>
-      <td class="amount" style="color:var(--muted)">${dim}</td>
-      <td class="amount" style="color:var(--muted)">${e.qty||'—'}</td>
-      <td class="amount" style="color:var(--muted)">${e.rate ? '₹'+e.rate : '—'}</td>
-      <td class="amount" style="font-weight:700">₹ ${fmt(e.total||0)}</td>
-      <td>
-        <div class="actions-cell">
-          <button class="btn-icon btn-sm" onclick="editEntry('${mk}',${i})" title="Edit single item">✏️</button>
-          <button class="btn-icon btn-sm" onclick="deleteEntry('${mk}',${i})" title="Delete" style="color:var(--red)">🗑️</button>
-        </div>
-      </td>
-    </tr>`;
-  });
-
-  // Totals footer
-  rows += `
-    <tr style="background:rgba(240,165,0,.07)">
-      <td colspan="4" style="text-align:right;color:var(--muted);font-size:12px;font-weight:600">NET BILL (BASE)</td>
-      <td class="amount" style="font-weight:800;color:var(--accent)">₹ ${fmt(d.base)}</td><td></td>
-    </tr>`;
-
-  if (d.applyGst) {
-    rows += `
-      <tr style="background:rgba(240,165,0,.04)">
-        <td colspan="4" style="text-align:right;color:var(--muted);font-size:12px">GST @ 18%</td>
-        <td class="amount" style="color:var(--muted)">₹ ${fmt(d.gst)}</td><td></td>
-      </tr>`;
-  }
-
-  rows += `
-    <tr style="background:rgba(240,165,0,.12)">
-      <td colspan="4" style="text-align:right;color:var(--accent);font-size:14px;font-weight:700">TOTAL VENDOR BILL</td>
-      <td class="amount" style="font-size:15px;font-weight:800;color:var(--accent)">₹ ${fmt(d.total)}</td><td></td>
-    </tr>`;
-
-  if (!entries.length) {
-    rows = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted)">No entries yet — click Add Entry</td></tr>`;
-  }
-
-  document.getElementById('detailTable').innerHTML = `<table>
-    <thead><tr>
-      <th>Item</th><th>W × H</th><th>Qty</th><th>Rate</th><th>Total</th><th>Actions</th>
-    </tr></thead>
-    <tbody>${rows}</tbody>
-  </table>`;
-
-  document.getElementById('ledgerView').style.display = 'none';
-  document.getElementById('detailView').style.display = 'block';
-};
 
 // Backdrop close for groupEditModal (added after original querySelectorAll ran)
 document.getElementById('groupEditModal').addEventListener('click', e => {
