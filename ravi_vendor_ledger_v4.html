@@ -2234,5 +2234,368 @@ window.addEventListener('DOMContentLoaded',init);
 
 
 </script>
+
+<!-- =========================================================
+     MODAL: GROUP EDIT (patch — non-destructive override)
+========================================================== -->
+<div id="groupEditModal" class="modal-overlay">
+  <div class="modal entry-modal">
+    <h3>✏️ Edit Group Entries</h3>
+    <div style="background:rgba(240,165,0,.08);border:1px solid rgba(240,165,0,.22);border-radius:9px;padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--muted);font-family:'DM Mono',monospace">
+      All items under this <strong style="color:var(--accent)">date + venue</strong> are loaded below.
+      Add new items, remove existing ones, or change any values — then save in one shot.
+    </div>
+    <div class="ew-grid" style="margin-bottom:12px">
+      <div class="fg">
+        <label>Month</label>
+        <div id="ge_month_label" style="background:var(--bg);border:1px solid var(--border);color:var(--muted);padding:10px 12px;border-radius:8px;font-size:14px;font-family:'DM Mono',monospace"></div>
+      </div>
+      <div class="fg"><label>Date</label><input type="date" id="ge_date"></div>
+    </div>
+    <div class="fg" style="margin-bottom:14px">
+      <label>Location / Event Venue</label>
+      <input type="text" id="ge_location" placeholder="e.g. IMPERIAL HALL, TAJ HOTEL, SANTACRUZ">
+    </div>
+    <div id="geRows"></div>
+    <button class="add-row-btn" onclick="addGeRow()">➕ Add Another Item to This Group</button>
+    <div class="grand-total-bar" style="margin-top:12px">
+      <div>
+        <div class="gt-label">Group Total (Net)</div>
+        <div class="gt-val" id="geGrandTotal">₹ 0</div>
+      </div>
+      <div style="text-align:right;font-size:12px;color:var(--muted)">
+        Month total will be recalculated automatically on save.
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('groupEditModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveGroupEdit()">💾 Save Group</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// GROUP EDIT — PATCH (non-destructive override of showDetail)
+// ============================================================
+let _geMonth = '';
+let _geOrigGroupKey = '';
+let _geRowCounter = 0;
+
+// ── Override showDetail to inject "✏️ Edit Group" button ──────
+const _origShowDetail = window.showDetail;
+window.showDetail = function(mk) {
+  const m    = allMonths.find(x => x.key === mk);
+  const d    = monthTotals[mk] || {base:0,gst:0,total:0,paid:0,applyGst:false};
+  const entries = detailEntries[mk] || [];
+
+  document.getElementById('detailTitle').textContent = `${m?.label||mk} — Detail Entries`;
+  window.currentDetailMk = mk;
+
+  // Inject month-level export buttons once
+  const actionsDiv = document.querySelector('#detailView .detail-hdr > div:nth-child(2)');
+  if (actionsDiv && !document.getElementById('m-export-xls')) {
+    actionsDiv.insertAdjacentHTML('afterbegin',
+      '<button id="m-export-xls" class="btn btn-ghost btn-sm" onclick="exportExcel(window.currentDetailMk)">📊 Month Excel</button>' +
+      '<button id="m-export-pdf" class="btn btn-ghost btn-sm" onclick="exportPDF(window.currentDetailMk)">📄 Month PDF</button>');
+  }
+
+  const cb = document.getElementById('gstToggle');
+  cb.checked = d.applyGst;
+  cb.setAttribute('onchange', `toggleGst('${mk}')`);
+
+  let rows = '', cDate = null, cLoc = null, lastGrp = '';
+
+  entries.forEach((e, i) => {
+    if (e.date)     cDate = e.date;
+    if (e.location) cLoc  = e.location;
+    const gk = `${cDate}|${cLoc}`;
+
+    if (gk !== lastGrp && (e.date || e.location)) {
+      const enc = encodeURIComponent(gk);
+      // Group header — spans 5 columns, last column has Edit Group btn
+      rows += `<tr class="group-hdr">
+        <td colspan="5" style="vertical-align:middle">${fmtDate(cDate)} — ${cLoc||''}</td>
+        <td style="text-align:right;background:var(--surface2);padding:6px 10px;vertical-align:middle">
+          <button class="btn btn-ghost btn-sm"
+            style="font-size:11px;padding:4px 10px;border-color:rgba(240,165,0,.45);color:var(--accent);white-space:nowrap"
+            onclick="event.stopPropagation();openGroupEdit('${mk}','${enc}')">
+            ✏️ Edit Group
+          </button>
+        </td>
+      </tr>`;
+      lastGrp = gk;
+    }
+
+    const dim = (e.w && e.h) ? `${e.w} × ${e.h}` : '—';
+    rows += `<tr>
+      <td style="padding-left:22px;font-weight:500">${e.item}</td>
+      <td class="amount" style="color:var(--muted)">${dim}</td>
+      <td class="amount" style="color:var(--muted)">${e.qty||'—'}</td>
+      <td class="amount" style="color:var(--muted)">${e.rate ? '₹'+e.rate : '—'}</td>
+      <td class="amount" style="font-weight:700">₹ ${fmt(e.total||0)}</td>
+      <td>
+        <div class="actions-cell">
+          <button class="btn-icon btn-sm" onclick="editEntry('${mk}',${i})" title="Edit single item">✏️</button>
+          <button class="btn-icon btn-sm" onclick="deleteEntry('${mk}',${i})" title="Delete" style="color:var(--red)">🗑️</button>
+        </div>
+      </td>
+    </tr>`;
+  });
+
+  // Totals footer
+  rows += `
+    <tr style="background:rgba(240,165,0,.07)">
+      <td colspan="4" style="text-align:right;color:var(--muted);font-size:12px;font-weight:600">NET BILL (BASE)</td>
+      <td class="amount" style="font-weight:800;color:var(--accent)">₹ ${fmt(d.base)}</td><td></td>
+    </tr>`;
+
+  if (d.applyGst) {
+    rows += `
+      <tr style="background:rgba(240,165,0,.04)">
+        <td colspan="4" style="text-align:right;color:var(--muted);font-size:12px">GST @ 18%</td>
+        <td class="amount" style="color:var(--muted)">₹ ${fmt(d.gst)}</td><td></td>
+      </tr>`;
+  }
+
+  rows += `
+    <tr style="background:rgba(240,165,0,.12)">
+      <td colspan="4" style="text-align:right;color:var(--accent);font-size:14px;font-weight:700">TOTAL VENDOR BILL</td>
+      <td class="amount" style="font-size:15px;font-weight:800;color:var(--accent)">₹ ${fmt(d.total)}</td><td></td>
+    </tr>`;
+
+  if (!entries.length) {
+    rows = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--muted)">No entries yet — click Add Entry</td></tr>`;
+  }
+
+  document.getElementById('detailTable').innerHTML = `<table>
+    <thead><tr>
+      <th>Item</th><th>W × H</th><th>Qty</th><th>Rate</th><th>Total</th><th>Actions</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  document.getElementById('ledgerView').style.display = 'none';
+  document.getElementById('detailView').style.display = 'block';
+};
+
+// Backdrop close for groupEditModal (added after original querySelectorAll ran)
+document.getElementById('groupEditModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('groupEditModal'))
+    document.getElementById('groupEditModal').classList.remove('open');
+});
+
+// ── Open Group Edit modal ─────────────────────────────────────
+function openGroupEdit(mk, encodedGk) {
+  const gk = decodeURIComponent(encodedGk);
+  const [gDate, gLoc] = gk.split('|');
+  const entries = detailEntries[mk] || [];
+
+  // Collect all entries belonging to this group
+  let cDate = null, cLoc = null;
+  const groupItems = [];
+
+  entries.forEach(e => {
+    if (e.date)     cDate = e.date;
+    if (e.location) cLoc  = e.location;
+    if (`${cDate}|${cLoc}` === gk) groupItems.push({...e});
+  });
+
+  _geMonth        = mk;
+  _geOrigGroupKey = gk;
+  _geRowCounter   = 0;
+
+  // Fill header
+  const mLabel = allMonths.find(m => m.key === mk)?.label || mk;
+  document.getElementById('ge_month_label').textContent = mLabel;
+  document.getElementById('ge_date').value     = (gDate && gDate !== 'null') ? gDate : '';
+  document.getElementById('ge_location').value = (gLoc  && gLoc  !== 'null') ? gLoc  : '';
+
+  // Clear rows and re-populate
+  document.getElementById('geRows').innerHTML = '';
+  if (groupItems.length) {
+    groupItems.forEach(item => addGeRow(item));
+  } else {
+    addGeRow();
+  }
+
+  updateGeGrandTotal();
+  document.getElementById('groupEditModal').classList.add('open');
+}
+
+// ── Add a row to the group edit modal ────────────────────────
+function addGeRow(prefill) {
+  _geRowCounter++;
+  const n = _geRowCounter;
+  const safeVal = v => (v != null ? v : '');
+
+  const html = `<div class="entry-row" id="gerow-${n}">
+    <div class="entry-row-hdr">
+      <span class="entry-row-num">Item #${n}</span>
+      <button class="btn btn-danger btn-sm" onclick="removeGeRow(${n})">✕ Remove</button>
+    </div>
+    <div class="ew-grid">
+      <div class="fg">
+        <label>Item Name *</label>
+        <input type="text" id="ge_item_${n}" placeholder="e.g. LED WALL, BACKDROP…"
+          value="${safeVal(prefill?.item)}" oninput="calcGeRow(${n})">
+      </div>
+      <div class="fg">
+        <label>Rate Card</label>
+        <select id="ge_rcard_${n}" onchange="applyGeRateCard(${n})"><option value="">Select…</option></select>
+      </div>
+    </div>
+    <div class="ew-4">
+      <div class="fg"><label>W (ft)</label>
+        <input type="number" id="ge_w_${n}" placeholder="W" value="${safeVal(prefill?.w)}" oninput="calcGeRow(${n})">
+      </div>
+      <div class="fg"><label>H (ft)</label>
+        <input type="number" id="ge_h_${n}" placeholder="H" value="${safeVal(prefill?.h)}" oninput="calcGeRow(${n})">
+      </div>
+      <div class="fg"><label>Qty</label>
+        <input type="number" id="ge_qty_${n}" value="${prefill?.qty != null ? prefill.qty : 1}" oninput="calcGeRow(${n})">
+      </div>
+      <div class="fg"><label>Rate (₹)</label>
+        <input type="number" id="ge_rate_${n}" value="${prefill?.rate != null ? prefill.rate : 17}" oninput="calcGeRow(${n})">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+      <div class="fg" style="flex:1">
+        <label>Total (₹) — auto or override</label>
+        <input type="number" id="ge_total_${n}" placeholder="Auto-calculated"
+          value="${safeVal(prefill?.total)}" oninput="updateGeGrandTotal()">
+      </div>
+      <div class="total-pill" id="ge_pill_${n}" style="margin-top:20px">
+        ₹ ${prefill?.total ? fmt(prefill.total) : '0'}
+      </div>
+    </div>
+  </div>`;
+
+  document.getElementById('geRows').insertAdjacentHTML('beforeend', html);
+  populateRateDropdown(`ge_rcard_${n}`);
+  updateGeGrandTotal();
+}
+
+function removeGeRow(n) {
+  document.getElementById(`gerow-${n}`).remove();
+  updateGeGrandTotal();
+}
+
+function applyGeRateCard(n) {
+  const v = document.getElementById(`ge_rcard_${n}`).value;
+  if (v) { document.getElementById(`ge_rate_${n}`).value = v; calcGeRow(n); }
+}
+
+function calcGeRow(n) {
+  const w    = parseFloat(document.getElementById(`ge_w_${n}`)?.value)    || 0;
+  const h    = parseFloat(document.getElementById(`ge_h_${n}`)?.value)    || 0;
+  const qty  = parseFloat(document.getElementById(`ge_qty_${n}`)?.value)  || 1;
+  const itemEl = document.getElementById(`ge_item_${n}`);
+  const rateEl = document.getElementById(`ge_rate_${n}`);
+  const itemName = itemEl?.value || '';
+
+  // Apply dynamic rate if function exists
+  if (rateEl && typeof getDynamicRate === 'function') {
+    const autoRate = getDynamicRate(itemName, parseFloat(rateEl.value) || 0, w, h);
+    if (autoRate !== (parseFloat(rateEl.value) || 0)) rateEl.value = autoRate;
+  }
+
+  const rate = parseFloat(document.getElementById(`ge_rate_${n}`)?.value) || 0;
+  let t = 0;
+  if (/\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(itemName)) {
+    t = qty * rate;
+  } else {
+    t = (w && h) ? w * h * qty * rate : 0;
+  }
+  if (t > 0) document.getElementById(`ge_total_${n}`).value = t;
+  document.getElementById(`ge_pill_${n}`).textContent = `₹ ${fmt(t)}`;
+  updateGeGrandTotal();
+}
+
+function updateGeGrandTotal() {
+  let total = 0;
+  document.querySelectorAll('[id^="ge_total_"]').forEach(el => { total += parseFloat(el.value) || 0; });
+  document.getElementById('geGrandTotal').textContent = '₹ ' + fmt(total);
+}
+
+// ── Save group edit ───────────────────────────────────────────
+function saveGroupEdit() {
+  const mk        = _geMonth;
+  const origGk    = _geOrigGroupKey;
+  const newDate   = document.getElementById('ge_date').value     || null;
+  const newLoc    = document.getElementById('ge_location').value.trim().toUpperCase() || null;
+
+  if (!mk) { alert('No month loaded'); return; }
+
+  // Collect new item rows (in DOM order)
+  const newItems = [];
+  document.querySelectorAll('[id^="gerow-"]').forEach(row => {
+    const n = row.id.split('-')[1];
+    const item  = document.getElementById(`ge_item_${n}`)?.value?.trim()?.toUpperCase();
+    const total = parseFloat(document.getElementById(`ge_total_${n}`)?.value) || 0;
+    if (!item || !total) return;
+    const w    = parseFloat(document.getElementById(`ge_w_${n}`)?.value)   || null;
+    const h    = parseFloat(document.getElementById(`ge_h_${n}`)?.value)   || null;
+    const qty  = parseFloat(document.getElementById(`ge_qty_${n}`)?.value) || null;
+    const rate = parseFloat(document.getElementById(`ge_rate_${n}`)?.value)|| null;
+    newItems.push({ item, w, h, qty, rate, total });
+  });
+
+  if (!newItems.length) { alert('Add at least one item with a total'); return; }
+
+  // Build new entry objects — first item carries date+location, rest are null
+  const newEntries = newItems.map((item, i) => ({
+    date:     i === 0 ? newDate : null,
+    location: i === 0 ? newLoc  : null,
+    ...item
+  }));
+
+  // Find first and last index of the original group in detailEntries[mk]
+  const entries = detailEntries[mk] || [];
+  let cDate = null, cLoc = null;
+  let firstIdx = -1, lastIdx = -1;
+  let oldGroupTotal = 0;
+
+  entries.forEach((e, i) => {
+    if (e.date)     cDate = e.date;
+    if (e.location) cLoc  = e.location;
+    if (`${cDate}|${cLoc}` === origGk) {
+      if (firstIdx === -1) firstIdx = i;
+      lastIdx = i;
+      oldGroupTotal += e.total || 0;
+    }
+  });
+
+  if (firstIdx === -1) {
+    // Group not found (edge case) — just append
+    if (!detailEntries[mk]) detailEntries[mk] = [];
+    detailEntries[mk].push(...newEntries);
+  } else {
+    // Replace in-place: removes old group rows, inserts new ones at same position
+    entries.splice(firstIdx, lastIdx - firstIdx + 1, ...newEntries);
+    detailEntries[mk] = entries;
+  }
+
+  // Recalculate month total
+  const newGroupTotal = newItems.reduce((s, it) => s + it.total, 0);
+  const diff = newGroupTotal - oldGroupTotal;
+
+  if (!monthTotals[mk]) monthTotals[mk] = { base: 0, gst: 0, total: 0, paid: 0, applyGst: false };
+  monthTotals[mk].base  = Math.max(0, (monthTotals[mk].base || 0) + diff);
+  monthTotals[mk].gst   = monthTotals[mk].applyGst ? monthTotals[mk].base * GST_RATE : 0;
+  monthTotals[mk].total = monthTotals[mk].base + monthTotals[mk].gst;
+
+  save('monthTotals', monthTotals);
+  save('detailEntries', detailEntries);
+  closeModal('groupEditModal');
+  renderCards();
+  renderLedger();
+  renderAllEntries();
+  showDetail(mk);
+
+  const mLabel = allMonths.find(m => m.key === mk)?.label || mk;
+  alert(`✓ Group updated — ${newItems.length} item${newItems.length > 1 ? 's' : ''} saved to ${mLabel}`);
+}
+</script>
 </body>
 </html>
