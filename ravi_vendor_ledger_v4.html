@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <!-- baba: begin -->
-<script type="text/javascript" nonce="27666fc71337447cbd18ee40b79" src="//local.adguard.org?ts=1779100350559&amp;type=content-script&amp;dmn=chat.z.ai&amp;url=https%3A%2F%2Fchat.z.ai%2Fapi%2Fv1%2Fstorage%2Fversions%2F9eb0a915-4d5a-4ca8-9391-cbe68706e6ae%2Ffile%3Fpath%3Ddownload%252Fravi_vendor_ledger_v5.html&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="27666fc71337447cbd18ee40b79" src="//local.adguard.org?ts=1779100350559&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" src="//prod-chat-kimi.tos-cn-beijing.volces.com/adlock/injections/script.js?t=12630530&amp;p=1533290"></script>
+<script type="text/javascript" nonce="27666fc71337447cbd18ee40b79" src="//local.adguard.org?ts=1779100350559&amp;type=content-script&amp;dmn=chat.z.ai&amp;url=https%3A%2F%2Fchat.z.ai%2Fapi%2Fv1%2Fstorage%2Fversions%2F2c91ecc0-5e99-4ab2-ace1-64fc327ebfb9%2Ffile%3Fpath%3Ddownload%252Fshabbir_vendor_ledger_v5.html&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="27666fc71337447cbd18ee40b79" src="//local.adguard.org?ts=1779100350559&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" src="//prod-chat-kimi.tos-cn-beijing.volces.com/adlock/injections/script.js?t=12630530&amp;p=1533290"></script>
 <!-- baba: end -->
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RAVI Vendor Ledger v5 — Flex Production</title>
+<title>SHABBIR Vendor Ledger v5 — Flex Production</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -193,7 +193,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(240,16
   <div class="logo">
     <div class="logo-icon">📋</div>
     <div>
-      <div class="logo-text">RAVI Vendor Ledger</div>
+      <div class="logo-text">SHABBIR Vendor Ledger</div>
       <div class="logo-sub">Flex Production</div>
     </div>
   </div>
@@ -512,7 +512,7 @@ REGISTARTION BACK DROP
     <div style="background:rgba(78,168,245,.08);border:1px solid rgba(78,168,245,.3);border-radius:10px;padding:13px;margin-bottom:18px;font-size:13px;color:var(--muted);line-height:1.6">
       <strong style="color:var(--blue)">Migrating from Excel?</strong> Enter the cumulative amounts
       from your old Excel records here. These will be added to your totals as a carry-forward balance,
-      so the balance due to RAVI reflects the full picture — including amounts before this app started.
+      so the balance due to SHABBIR reflects the full picture — including amounts before this app started.
     </div>
     <div class="fg" style="margin-bottom:12px">
       <label>Migration Date (When you started using this app)</label>
@@ -567,7 +567,7 @@ REGISTARTION BACK DROP
 // CONSTANTS
 // ============================================================
 const GST_RATE = 0.18;
-const STORE_VER = 'ravi_v5_';
+const STORE_VER = 'shab_v5_';
 let rowCounter = 0;
 
 // ── DYNAMIC MONTH GENERATION ──────────────────────────────────────
@@ -733,9 +733,9 @@ function load(k,def){try{const v=JSON.parse(localStorage.getItem(STORE_VER+k));r
 // ============================================================
 // CLOUD SYNC LOGIC
 // ============================================================
-let cloudToken = localStorage.getItem('ravi_gist_token') || '';
-let cloudGistId = localStorage.getItem('ravi_gist_id') || '';
-let cloudAuto = localStorage.getItem('ravi_gist_auto') === 'true';
+let cloudToken = localStorage.getItem('shab_gist_token') || '';
+let cloudGistId = localStorage.getItem('shab_gist_id') || '';
+let cloudAuto = localStorage.getItem('shab_gist_auto') === 'true';
 let syncTimer = null;
 
 function triggerAutoSync() {
@@ -755,14 +755,14 @@ function openCloudModal() {
 function saveCloudConfig() {
   cloudToken = document.getElementById('c_token').value.trim();
   cloudGistId = document.getElementById('c_gist').value.trim();
-  localStorage.setItem('ravi_gist_token', cloudToken);
-  localStorage.setItem('ravi_gist_id', cloudGistId);
+  localStorage.setItem('shab_gist_token', cloudToken);
+  localStorage.setItem('shab_gist_id', cloudGistId);
   document.getElementById('cloudStatus').textContent = 'Config saved locally.';
 }
 
 function toggleAutoSync() {
   cloudAuto = document.getElementById('c_auto').checked;
-  localStorage.setItem('ravi_gist_auto', cloudAuto);
+  localStorage.setItem('shab_gist_auto', cloudAuto);
 }
 
 async function pushToCloud(manual = false) {
@@ -797,7 +797,7 @@ async function pushToCloud(manual = false) {
       if(data.id) {
         cloudGistId = data.id;
         document.getElementById('c_gist').value = cloudGistId;
-        localStorage.setItem('ravi_gist_id', cloudGistId);
+        localStorage.setItem('shab_gist_id', cloudGistId);
         if(manual) statusEl.textContent = 'Created new Gist and pushed data successfully. Copy this Gist ID to other apps!';
         updateSyncBanner(Date.now());
       } else throw new Error(data.message || 'Failed to create Gist');
