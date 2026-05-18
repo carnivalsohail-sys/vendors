@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <!-- baba: begin -->
-<script type="text/javascript" src="//prod-chat-kimi.tos-cn-beijing.volces.com/adlock/injections/script.js?t=12630530&amp;p=1533290"></script>
+<script type="text/javascript" nonce="27666fc71337447cbd18ee40b79" src="//local.adguard.org?ts=1779100350559&amp;type=content-script&amp;dmn=chat.z.ai&amp;url=https%3A%2F%2Fchat.z.ai%2Fapi%2Fv1%2Fstorage%2Fversions%2F9eb0a915-4d5a-4ca8-9391-cbe68706e6ae%2Ffile%3Fpath%3Ddownload%252Fravi_vendor_ledger_v5.html&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="27666fc71337447cbd18ee40b79" src="//local.adguard.org?ts=1779100350559&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" src="//prod-chat-kimi.tos-cn-beijing.volces.com/adlock/injections/script.js?t=12630530&amp;p=1533290"></script>
 <!-- baba: end -->
 
 <meta charset="UTF-8">
@@ -567,7 +567,7 @@ REGISTARTION BACK DROP
 // CONSTANTS
 // ============================================================
 const GST_RATE = 0.18;
-const STORE_VER = 'rv4_';
+const STORE_VER = 'ravi_v5_';
 let rowCounter = 0;
 
 // ── DYNAMIC MONTH GENERATION ──────────────────────────────────────
@@ -627,6 +627,7 @@ function addCustomMonth() {
 
 // ── DEFAULT DATA (migrated from v2 + new TAJ event) ──────────────
 const DEFAULT_MONTH_TOTALS = {
+  "2026-05":{base:32296,   gst:5813.28,  total:38109.28,  paid:0, applyGst:true},
   "2026-04":{base:165994,  gst:29878.92, total:195872.92, paid:0, applyGst:true},
   "2026-03":{base:67425,   gst:12136.50, total:79561.50,  paid:0, applyGst:true},
   "2026-02":{base:123332,  gst:22199.76, total:145531.76, paid:0, applyGst:true},
@@ -648,6 +649,13 @@ const DEFAULT_MONTH_TOTALS = {
 };
 
 const DEFAULT_DETAIL_ENTRIES = {
+  "2026-05":[
+    {date:"2026-05-18",location:"BALLROOM NO 3, ITC MARATHA, ANDHERI EAST",item:"LED WALL",w:16,h:10,qty:1,rate:110,total:17600},
+    {date:null,location:null,item:"STAGE",w:24,h:16,qty:1,rate:30,total:11520},
+    {date:null,location:null,item:"SIDE PANELS",w:4,h:10,qty:2,rate:17,total:1360},
+    {date:null,location:null,item:"CONSOLE MASKING",w:12,h:4,qty:1,rate:17,total:816},
+    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
+  ],
   "2026-04":[
     {date:"2026-04-03",location:"BANQUET + COURTYARD",item:"SIDE PANELS",w:3,h:11,qty:2,rate:17,total:1122},
     {date:null,location:null,item:"STANDEE",w:4,h:8,qty:2,rate:17,total:1088},
@@ -725,9 +733,9 @@ function load(k,def){try{const v=JSON.parse(localStorage.getItem(STORE_VER+k));r
 // ============================================================
 // CLOUD SYNC LOGIC
 // ============================================================
-let cloudToken = localStorage.getItem('vendor_gist_token') || '';
-let cloudGistId = localStorage.getItem('vendor_gist_id') || '';
-let cloudAuto = localStorage.getItem('vendor_gist_auto') === 'true';
+let cloudToken = localStorage.getItem('ravi_gist_token') || '';
+let cloudGistId = localStorage.getItem('ravi_gist_id') || '';
+let cloudAuto = localStorage.getItem('ravi_gist_auto') === 'true';
 let syncTimer = null;
 
 function triggerAutoSync() {
@@ -747,14 +755,14 @@ function openCloudModal() {
 function saveCloudConfig() {
   cloudToken = document.getElementById('c_token').value.trim();
   cloudGistId = document.getElementById('c_gist').value.trim();
-  localStorage.setItem('vendor_gist_token', cloudToken);
-  localStorage.setItem('vendor_gist_id', cloudGistId);
+  localStorage.setItem('ravi_gist_token', cloudToken);
+  localStorage.setItem('ravi_gist_id', cloudGistId);
   document.getElementById('cloudStatus').textContent = 'Config saved locally.';
 }
 
 function toggleAutoSync() {
   cloudAuto = document.getElementById('c_auto').checked;
-  localStorage.setItem('vendor_gist_auto', cloudAuto);
+  localStorage.setItem('ravi_gist_auto', cloudAuto);
 }
 
 async function pushToCloud(manual = false) {
@@ -789,7 +797,7 @@ async function pushToCloud(manual = false) {
       if(data.id) {
         cloudGistId = data.id;
         document.getElementById('c_gist').value = cloudGistId;
-        localStorage.setItem('vendor_gist_id', cloudGistId);
+        localStorage.setItem('ravi_gist_id', cloudGistId);
         if(manual) statusEl.textContent = 'Created new Gist and pushed data successfully. Copy this Gist ID to other apps!';
         updateSyncBanner(Date.now());
       } else throw new Error(data.message || 'Failed to create Gist');
@@ -1552,7 +1560,7 @@ function parseWhatsApp(){
   // ── Pattern matchers ──────────────────────────────────
   const isEventMeta = l =>
     /^\d{1,2}[\.\s]*(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)/i.test(l) ||
-    /KAAM\s*START|EVENT\s*ON\s*:|CLIENT\s*DRY\s*RUN|SET\s*UP|RAAT|SUBAH/i.test(l) ||
+    /KAAM\s*START|EVENT\s*ON\s*:|CLIENT\s*DRY\s*RUN|SET\s*UP|VENUE\s*:|RAAT|SUBAH/i.test(l) ||
     /NIGHT\s*SET\s*UP|READY\s*AT|\bNIGHT\b.*SET/i.test(l) ||
     /^\d{1,2}\s*PM\b|^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l) ||
     /^(7|8|9|10|11|12)\.\d+\s*(AM|PM)/i.test(l);
@@ -1561,12 +1569,12 @@ function parseWhatsApp(){
   const isHeightOnly = l => /^\d+\.?\d*\s*FT\s*(HI|HIGH)[.\s]*$/i.test(l);
   // Descriptor words (not billable items)
   const isDescriptor = l =>
-    /^(\d+\s*STEPS?|GREY\s*CARPET|STEPS?|CLICKER\s+\d+|STRUCTURE|TRUSS)\s*$/i.test(l) ||
+    /^(\d+\s*STEPS?|GREY\s*CARPET|STEPS?|CLICKER\s+\d+|STRUCTURE|TRUSS|P2\.?9|HDMI\s*OUT)\s*$/i.test(l) ||
     /^\(?\s*\d+\s*PCS\s*\)?\s*$/i.test(l) ||   // standalone "( 2 PCS )" quantity-only line
     /^\(\s*(FRONT|BACK|SIDE|LEFT|RIGHT)\s*\)\s*$/i.test(l); // bracketed face labels like "( FRONT )"
   // Location line detection
   const isLocation = l =>
-    /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|BOUNDARY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ)/i.test(l) &&
+    /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|BOUNDARY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ|BALLROOM|ANDHERI|MARATHA)/i.test(l) &&
     !/^\d/.test(l) &&
     !/(LED|RISER|STAGE|BACKDROP|SIDE PANEL|MASKING|STANDEE|TRANSPORT|FLEX|CLICKER|PLATFORM)/i.test(l);
 
