@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <!-- baba: begin -->
-<script type="text/javascript" nonce="27666fc71337447cbd18ee40b79" src="//local.adguard.org?ts=1779100350559&amp;type=content-script&amp;dmn=chat.z.ai&amp;url=https%3A%2F%2Fchat.z.ai%2Fapi%2Fv1%2Fstorage%2Fversions%2F2c91ecc0-5e99-4ab2-ace1-64fc327ebfb9%2Ffile%3Fpath%3Ddownload%252Fshabbir_vendor_ledger_v5.html&amp;app=chrome.exe&amp;css=3&amp;js=1&amp;rel=1&amp;rji=1&amp;sbe=1"></script><script type="text/javascript" nonce="27666fc71337447cbd18ee40b79" src="//local.adguard.org?ts=1779100350559&amp;name=AdGuard%20Extra&amp;name=AdGuard%20Popup%20Blocker&amp;type=user-script"></script><script type="text/javascript" src="//prod-chat-kimi.tos-cn-beijing.volces.com/adlock/injections/script.js?t=12630530&amp;p=1533290"></script>
+<script type="text/javascript" src="//prod-chat-kimi.tos-cn-beijing.volces.com/adlock/injections/script.js?t=12630530&amp;p=1533290"></script>
 <!-- baba: end -->
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SHABBIR Vendor Ledger v5 — Flex Production</title>
+<title>RAVI Vendor Ledger v5 — Flex Production</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -193,7 +193,7 @@ tbody tr.total-row td{color:var(--accent);font-weight:700;background:rgba(240,16
   <div class="logo">
     <div class="logo-icon">📋</div>
     <div>
-      <div class="logo-text">SHABBIR Vendor Ledger</div>
+      <div class="logo-text">RAVI Vendor Ledger</div>
       <div class="logo-sub">Flex Production</div>
     </div>
   </div>
@@ -512,7 +512,7 @@ REGISTARTION BACK DROP
     <div style="background:rgba(78,168,245,.08);border:1px solid rgba(78,168,245,.3);border-radius:10px;padding:13px;margin-bottom:18px;font-size:13px;color:var(--muted);line-height:1.6">
       <strong style="color:var(--blue)">Migrating from Excel?</strong> Enter the cumulative amounts
       from your old Excel records here. These will be added to your totals as a carry-forward balance,
-      so the balance due to SHABBIR reflects the full picture — including amounts before this app started.
+      so the balance due to RAVI reflects the full picture — including amounts before this app started.
     </div>
     <div class="fg" style="margin-bottom:12px">
       <label>Migration Date (When you started using this app)</label>
@@ -567,7 +567,7 @@ REGISTARTION BACK DROP
 // CONSTANTS
 // ============================================================
 const GST_RATE = 0.18;
-const STORE_VER = 'shab_v5_';
+const STORE_VER = 'rv4_';
 let rowCounter = 0;
 
 // ── DYNAMIC MONTH GENERATION ──────────────────────────────────────
@@ -627,7 +627,6 @@ function addCustomMonth() {
 
 // ── DEFAULT DATA (migrated from v2 + new TAJ event) ──────────────
 const DEFAULT_MONTH_TOTALS = {
-  "2026-05":{base:32296,   gst:5813.28,  total:38109.28,  paid:0, applyGst:true},
   "2026-04":{base:165994,  gst:29878.92, total:195872.92, paid:0, applyGst:true},
   "2026-03":{base:67425,   gst:12136.50, total:79561.50,  paid:0, applyGst:true},
   "2026-02":{base:123332,  gst:22199.76, total:145531.76, paid:0, applyGst:true},
@@ -649,13 +648,6 @@ const DEFAULT_MONTH_TOTALS = {
 };
 
 const DEFAULT_DETAIL_ENTRIES = {
-  "2026-05":[
-    {date:"2026-05-18",location:"BALLROOM NO 3, ITC MARATHA, ANDHERI EAST",item:"LED WALL",w:16,h:10,qty:1,rate:110,total:17600},
-    {date:null,location:null,item:"STAGE",w:24,h:16,qty:1,rate:30,total:11520},
-    {date:null,location:null,item:"SIDE PANELS",w:4,h:10,qty:2,rate:17,total:1360},
-    {date:null,location:null,item:"CONSOLE MASKING",w:12,h:4,qty:1,rate:17,total:816},
-    {date:null,location:null,item:"TRANSPORT",w:null,h:null,qty:null,rate:null,total:1000},
-  ],
   "2026-04":[
     {date:"2026-04-03",location:"BANQUET + COURTYARD",item:"SIDE PANELS",w:3,h:11,qty:2,rate:17,total:1122},
     {date:null,location:null,item:"STANDEE",w:4,h:8,qty:2,rate:17,total:1088},
@@ -733,9 +725,9 @@ function load(k,def){try{const v=JSON.parse(localStorage.getItem(STORE_VER+k));r
 // ============================================================
 // CLOUD SYNC LOGIC
 // ============================================================
-let cloudToken = localStorage.getItem('shab_gist_token') || '';
-let cloudGistId = localStorage.getItem('shab_gist_id') || '';
-let cloudAuto = localStorage.getItem('shab_gist_auto') === 'true';
+let cloudToken = localStorage.getItem('vendor_gist_token') || '';
+let cloudGistId = localStorage.getItem('vendor_gist_id') || '';
+let cloudAuto = localStorage.getItem('vendor_gist_auto') === 'true';
 let syncTimer = null;
 
 function triggerAutoSync() {
@@ -755,14 +747,14 @@ function openCloudModal() {
 function saveCloudConfig() {
   cloudToken = document.getElementById('c_token').value.trim();
   cloudGistId = document.getElementById('c_gist').value.trim();
-  localStorage.setItem('shab_gist_token', cloudToken);
-  localStorage.setItem('shab_gist_id', cloudGistId);
+  localStorage.setItem('vendor_gist_token', cloudToken);
+  localStorage.setItem('vendor_gist_id', cloudGistId);
   document.getElementById('cloudStatus').textContent = 'Config saved locally.';
 }
 
 function toggleAutoSync() {
   cloudAuto = document.getElementById('c_auto').checked;
-  localStorage.setItem('shab_gist_auto', cloudAuto);
+  localStorage.setItem('vendor_gist_auto', cloudAuto);
 }
 
 async function pushToCloud(manual = false) {
@@ -797,7 +789,7 @@ async function pushToCloud(manual = false) {
       if(data.id) {
         cloudGistId = data.id;
         document.getElementById('c_gist').value = cloudGistId;
-        localStorage.setItem('shab_gist_id', cloudGistId);
+        localStorage.setItem('vendor_gist_id', cloudGistId);
         if(manual) statusEl.textContent = 'Created new Gist and pushed data successfully. Copy this Gist ID to other apps!';
         updateSyncBanner(Date.now());
       } else throw new Error(data.message || 'Failed to create Gist');
@@ -1060,12 +1052,22 @@ window.currentDetailMk = mk;
   cb.checked = d.applyGst;
   cb.setAttribute('onchange', `toggleGst('${mk}')`);
 
-  let rows='', cDate=null, cLoc=null, lastGrp='';
+  let rows='', cDate=null, cLoc=null, lastGrp='', grpTotal=0;
+  const flushGrpTotal=()=>{
+    if(grpTotal>0){
+      rows+=`<tr style="background:rgba(240,165,0,.04);border-top:1px dashed rgba(240,165,0,.2)">
+        <td colspan="4" style="text-align:right;color:var(--muted);font-size:11px;font-family:'DM Mono',monospace;letter-spacing:1.2px;padding:6px 15px">EVENT TOTAL</td>
+        <td class="amount" style="font-weight:800;color:var(--accent);padding:6px 15px">₹ ${fmt(grpTotal)}</td>
+        <td></td></tr>`;
+      grpTotal=0;
+    }
+  };
   entries.forEach((e,i)=>{
     if(e.date) cDate=e.date;
     if(e.location) cLoc=e.location;
     const gk=`${cDate}|${cLoc}`;
     if(gk!==lastGrp && (e.date||e.location)){
+      flushGrpTotal();
       const _enc=encodeURIComponent(gk);
       rows+=`<tr class="group-hdr">
         <td colspan="5" style="vertical-align:middle">${fmtDate(cDate)} — ${cLoc||''}</td>
@@ -1076,6 +1078,7 @@ window.currentDetailMk = mk;
       </tr>`;
       lastGrp=gk;
     }
+    grpTotal+=(e.total||0);
     const dim=(e.w&&e.h)?`${e.w} × ${e.h}`:'—';
     rows+=`<tr>
       <td style="padding-left:22px;font-weight:500">${e.item}</td>
@@ -1091,6 +1094,7 @@ window.currentDetailMk = mk;
       </td>
     </tr>`;
   });
+  flushGrpTotal(); // close last event group
 
   // Totals footer
   rows+=`
@@ -1560,23 +1564,30 @@ function parseWhatsApp(){
   // ── Pattern matchers ──────────────────────────────────
   const isEventMeta = l =>
     /^\d{1,2}[\.\s]*(JANUARY|FEBRUARY|MARCH|APRIL|MAY|JUNE|JULY|AUGUST|SEPTEMBER|OCTOBER|NOVEMBER|DECEMBER|JAN|FEB|MAR|APR|JUN|JUL|AUG|SEP|OCT|NOV|DEC)/i.test(l) ||
-    /KAAM\s*START|EVENT\s*ON\s*:|CLIENT\s*DRY\s*RUN|SET\s*UP|VENUE\s*:|RAAT|SUBAH/i.test(l) ||
+    /KAAM\s*START|EVENT\s*ON\s*:|CLIENT\s*DRY\s*RUN|SET\s*UP|RAAT|SUBAH/i.test(l) ||
     /NIGHT\s*SET\s*UP|READY\s*AT|\bNIGHT\b.*SET/i.test(l) ||
     /^\d{1,2}\s*PM\b|^\d{1,2}[\.:]\d{2}\s*(AM|PM)/i.test(l) ||
-    /^(7|8|9|10|11|12)\.\d+\s*(AM|PM)/i.test(l);
+    /^(7|8|9|10|11|12)\.\d+\s*(AM|PM)/i.test(l) ||
+    /\bNOON\b|\bMIDNIGHT\b/i.test(l);  // '12 NOON', '7 NOON' time refs
 
   // Height-only like "1.6 FT HI" or "1 FT HI" — skip, just a stage height note
   const isHeightOnly = l => /^\d+\.?\d*\s*FT\s*(HI|HIGH)[.\s]*$/i.test(l);
   // Descriptor words (not billable items)
   const isDescriptor = l =>
-    /^(\d+\s*STEPS?|GREY\s*CARPET|STEPS?|CLICKER\s+\d+|STRUCTURE|TRUSS|P2\.?9|HDMI\s*OUT)\s*$/i.test(l) ||
+    /^(\d+\s*STEPS?|GREY\s*CARPET|STEPS?|CLICKER\s+\d+|STRUCTURE|TRUSS)\s*[-–.]?\s*$/i.test(l) ||
     /^\(?\s*\d+\s*PCS\s*\)?\s*$/i.test(l) ||   // standalone "( 2 PCS )" quantity-only line
-    /^\(\s*(FRONT|BACK|SIDE|LEFT|RIGHT)\s*\)\s*$/i.test(l); // bracketed face labels like "( FRONT )"
+    /^\(\s*(FRONT|BACK|SIDE|LEFT|RIGHT)\s*\)\s*$/i.test(l) || // bracketed face labels
+    /^WITH\s+\w/i.test(l) ||                   // "WITH HDMI OUT", "WITH CABLE" etc.
+    /^P\d+\.?\d*\s*$/i.test(l) ||             // "P2.9", "P3.9", "P4" — pixel pitch
+    /^(HDMI|VGA|SDI|AUX|DISPLAY\s*PORT)\s*(OUT|IN|CABLE)?\s*$/i.test(l) || // connectors
+    /^(PIXEL\s*PITCH|RESOLUTION|BRIGHTNESS|PROCESSOR)\s*[:\-]?\s*$/i.test(l); // tech specs
   // Location line detection
-  const isLocation = l =>
-    /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|BOUNDARY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ|BALLROOM|ANDHERI|MARATHA)/i.test(l) &&
-    !/^\d/.test(l) &&
-    !/(LED|RISER|STAGE|BACKDROP|SIDE PANEL|MASKING|STANDEE|TRANSPORT|FLEX|CLICKER|PLATFORM)/i.test(l);
+  const isLocation = l =>{
+    const cl=l.replace(/^VENUE\s*:\s*/i,'');
+    return /(HALL|HOTEL|BANQUET|FLOOR|MCA|LAWN|BOUNDARY|COURTYARD|ROOM|MARRIOTT|ITC|NOVOTEL|GOOGLY|TAJ|PLANET\s*HOLLYWOOD|IMPERIAL|PAREL|SANTACRUZ|ANDHERI|BANDRA|POWAI|JUHU|WORLI|LOWER\s*PAREL)/i.test(cl) &&
+      !/^\d/.test(l) &&
+      !/(LED|RISER|STAGE|BACKDROP|SIDE PANEL|MASKING|STANDEE|TRANSPORT|FLEX|CLICKER|PLATFORM)/i.test(cl);
+  };
 
   // Dimension: "16 by 8", "12 X 4", "2 x 9 hi", "16 BY 8"
   const dimByRe = /^(\d+\.?\d*)\s*(?:by|x|BY|X)\s*(\d+\.?\d*)(?:\s*(FT\s*)?(HI|HIGH))?/i;
@@ -1591,6 +1602,7 @@ function parseWhatsApp(){
   const cleanItemName = name => name
     .replace(/\.{2,}.*/g, '')      // remove ".." and everything after it
     .replace(/\*.*$/g, '')         // remove notes after *
+    .replace(/\s*[-–]\s*$/g, '')  // remove trailing dash: "Console Masking -" → "Console Masking"
     .replace(/\s{2,}/g, ' ')      // collapse multiple spaces
     .replace(/\s+[()]\s*/g, (m) => m.trim()) // tighten parentheses
     .trim();
@@ -1618,9 +1630,17 @@ function parseWhatsApp(){
     // Location line
     if(isLocation(line)){
       pushCurrent();
-      baseLocation=line;
+      const venueM=line.match(/^VENUE\s*:\s*(.+)/i);
+      if(venueM && baseLocation){
+        // "VENUE : BALLROOM NO 3" after "ITC MARATHA" → combine into one location
+        baseLocation=baseLocation+' — '+venueM[1].trim();
+      } else if(venueM){
+        baseLocation=venueM[1].trim();
+      } else {
+        baseLocation=line;
+      }
       if(!document.getElementById('e_location').value.trim())
-        document.getElementById('e_location').value=line;
+        document.getElementById('e_location').value=baseLocation;
       continue;
     }
 
@@ -1628,6 +1648,33 @@ function parseWhatsApp(){
     const wxM=line.match(dimWXRe);
     if(wxM){
       const w=parseFloat(wxM[1]),h=parseFloat(wxM[2]);
+      if(currentItem&&currentItem.item){
+        if(typeof getDynamicRate === 'function') currentItem.rate = getDynamicRate(currentItem.item, currentItem.rate, w, h);
+        const t = /\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(currentItem.item) ? (currentItem.qty||1)*(currentItem.rate||0) : w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        parsed.push({...currentItem,w,h,total:t});
+        currentItem.pushed=true;
+      }
+      continue;
+    }
+
+    // HT × WIDTH format: "10 ft ht x 4 ft width" — height listed first, then width
+    const htWidM=line.match(/^(\d+\.?\d*)\s*ft?\s*(?:ht|high|hi|h)\s*[xX×]\s*(\d+\.?\d*)/i);
+    if(htWidM){
+      const h=parseFloat(htWidM[1]),w=parseFloat(htWidM[2]);
+      if(currentItem&&currentItem.item){
+        if(typeof getDynamicRate === 'function') currentItem.rate = getDynamicRate(currentItem.item, currentItem.rate, w, h);
+        const t = /\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(currentItem.item) ? (currentItem.qty||1)*(currentItem.rate||0) : w*h*(currentItem.qty||1)*(currentItem.rate||17);
+        parsed.push({...currentItem,w,h,total:t});
+        currentItem.pushed=true;
+      }
+      continue;
+    }
+
+    // FT × FT format: "16 ft x 10 ft", "24 ft x 16 ft x 2.5ft hi", "12 ft x 4 ft"
+    // Takes first two numbers, ignores optional 3rd (stage height). Strips trailing notes like "- P2.9".
+    const ftXM=line.match(/^(\d+\.?\d*)\s*ft?\s*[xX×]\s*(\d+\.?\d*)/i);
+    if(ftXM){
+      const w=parseFloat(ftXM[1]),h=parseFloat(ftXM[2]);
       if(currentItem&&currentItem.item){
         if(typeof getDynamicRate === 'function') currentItem.rate = getDynamicRate(currentItem.item, currentItem.rate, w, h);
         const t = /\b(TRANSPORT|PROJECT(?:OR)?)\b/i.test(currentItem.item) ? (currentItem.qty||1)*(currentItem.rate||0) : w*h*(currentItem.qty||1)*(currentItem.rate||17);
