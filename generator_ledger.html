@@ -286,7 +286,7 @@ TRANSPORT"></textarea>
 
     <div class="ew-grid" style="margin-bottom:12px">
       <div class="fg"><label>Month *</label><select id="e_month"></select></div>
-      <div class="fg"><label>Date</label><input type="date" id="e_date" onchange="syncMonthFromDate()"></div>
+      <div class="fg"><label>Date</label><input type="date" id="e_date" onchange="syncMonthFromDate()" oninput="syncMonthFromDate()"></div>
     </div>
     <div class="fg" style="margin-bottom:14px">
       <label>Location / Event Venue</label>
@@ -984,18 +984,16 @@ function openAddModal(){
   document.getElementById('parseResult').style.display='none';
   document.getElementById('parseStatus').textContent='';
   document.getElementById('e_location').value='';
-  document.getElementById('e_date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('e_month').value=allMonths[0].key;
+  const todayStr = new Date().toISOString().split('T')[0];
+  document.getElementById('e_date').value = todayStr;
+  document.getElementById('e_month').value = todayStr.substring(0,7);
   addRow();
   document.getElementById('addModal').classList.add('open');
 }
 function syncMonthFromDate(){
-  const dateVal = document.getElementById('e_date').value;
-  if(!dateVal) return;
-  const d = new Date(dateVal + 'T00:00:00');
-  const y = d.getFullYear();
-  const mm = String(d.getMonth()+1).padStart(2,'0');
-  const key = `${y}-${mm}`;
+  const dateVal = document.getElementById('e_date').value; // "YYYY-MM-DD"
+  if(!dateVal || dateVal.length < 7) return;
+  const key = dateVal.substring(0, 7); // "YYYY-MM"
   const sel = document.getElementById('e_month');
   const opt = Array.from(sel.options).find(o => o.value === key);
   if(opt) sel.value = key;
