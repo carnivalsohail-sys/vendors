@@ -284,9 +284,9 @@ TRANSPORT"></textarea>
       <div id="parseResult" class="parse-result" style="display:none"></div>
     </div>
 
-    <div class="ew-grid" style="margin-bottom:12px">
-      <div class="fg"><label>Month *</label><select id="e_month"></select></div>
-      <div class="fg"><label>Date</label><input type="date" id="e_date" onchange="syncMonthFromDate()" oninput="syncMonthFromDate()"></div>
+    <div style="margin-bottom:12px">
+      <div class="fg"><label>Date *</label><input type="date" id="e_date" onchange="syncMonthFromDate()" oninput="syncMonthFromDate()" required></div>
+      <input type="hidden" id="e_month">
     </div>
     <div class="fg" style="margin-bottom:14px">
       <label>Location / Event Venue</label>
@@ -484,14 +484,16 @@ TRANSPORT"></textarea>
 const STORE_VER = 'gen_v1_';
 let rowCounter = 0;
 
-// Auto-generated month list — always starts from the CURRENT month and goes back 24 months.
-// This keeps the dropdowns/defaults correct forever without manual edits.
-function generateAllMonths(monthsBack=24){
+// Generates months from 6 months ahead down to 24 months back.
+function generateAllMonths(monthsBack=24, monthsAhead=6){
   const out=[];
   const now=new Date();
-  let y=now.getFullYear(), m=now.getMonth(); // 0-indexed month
   const MNAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  for(let i=0;i<monthsBack;i++){
+  // Start from monthsAhead in the future
+  let y=now.getFullYear(), m=now.getMonth()+monthsAhead;
+  while(m>11){m-=12;y++;}
+  const total=monthsBack+monthsAhead+1;
+  for(let i=0;i<total;i++){
     const mm=String(m+1).padStart(2,'0');
     out.push({key:`${y}-${mm}`, label:`${MNAMES[m]} ${y}`});
     m--; if(m<0){m=11; y--;}
@@ -676,7 +678,7 @@ function init(){
 
 function populateDropdowns(){
   const monthOpts = allMonths.map(m=>`<option value="${m.key}">${m.label}</option>`).join('');
-  ['e_month','edit_month','p_month'].forEach(id=>{
+  ['edit_month','p_month'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.innerHTML=monthOpts;
   });
@@ -993,10 +995,7 @@ function openAddModal(){
 function syncMonthFromDate(){
   const dateVal = document.getElementById('e_date').value; // "YYYY-MM-DD"
   if(!dateVal || dateVal.length < 7) return;
-  const key = dateVal.substring(0, 7); // "YYYY-MM"
-  const sel = document.getElementById('e_month');
-  const opt = Array.from(sel.options).find(o => o.value === key);
-  if(opt) sel.value = key;
+  document.getElementById('e_month').value = dateVal.substring(0, 7); // "YYYY-MM"
 }
 function clearParser(){
   document.getElementById('whatsappText').value='';
@@ -1055,10 +1054,11 @@ function updateGrandTotal(){
 }
 
 function saveEntries(){
-  const mk=document.getElementById('e_month').value;
   const date=document.getElementById('e_date').value;
+  if(!date){alert('Please select a date');return}
+  const mk=date.substring(0,7); // "YYYY-MM"
+  document.getElementById('e_month').value=mk;
   const location=document.getElementById('e_location').value.trim().toUpperCase()||null;
-  if(!mk){alert('Select a month');return}
   const rows=document.querySelectorAll('[id^="erow-"]');
   let added=0,totalAdded=0;
   rows.forEach(row=>{
@@ -1081,7 +1081,7 @@ function saveEntries(){
   monthTotals[mk].total=monthTotals[mk].base;
   save('monthTotals',monthTotals);save('detailEntries',detailEntries);
   closeModal('addModal');renderCards();renderLedger();renderAllEntries();
-  alert(`✓ ${added} entr${added>1?'ies':'y'} added to ${allMonths.find(m=>m.key===mk)?.label||mk}`);
+  alert(`✓ ${added} entr${added>1?'ies':'y'} added to ${mk}`);
 }
 
 // ============================================================
