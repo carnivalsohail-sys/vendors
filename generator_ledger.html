@@ -484,13 +484,21 @@ TRANSPORT"></textarea>
 const STORE_VER = 'gen_v1_';
 let rowCounter = 0;
 
-const allMonths = [
-  {key:'2026-05',label:'May 2026'},{key:'2026-04',label:'Apr 2026'},{key:'2026-03',label:'Mar 2026'},
-  {key:'2026-02',label:'Feb 2026'},{key:'2026-01',label:'Jan 2026'},
-  {key:'2025-12',label:'Dec 2025'},{key:'2025-11',label:'Nov 2025'},
-  {key:'2025-10',label:'Oct 2025'},{key:'2025-09',label:'Sep 2025'},
-  {key:'2025-08',label:'Aug 2025'},{key:'2025-07',label:'Jul 2025'}
-];
+// Auto-generated month list — always starts from the CURRENT month and goes back 24 months.
+// This keeps the dropdowns/defaults correct forever without manual edits.
+function generateAllMonths(monthsBack=24){
+  const out=[];
+  const now=new Date();
+  let y=now.getFullYear(), m=now.getMonth(); // 0-indexed month
+  const MNAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  for(let i=0;i<monthsBack;i++){
+    const mm=String(m+1).padStart(2,'0');
+    out.push({key:`${y}-${mm}`, label:`${MNAMES[m]} ${y}`});
+    m--; if(m<0){m=11; y--;}
+  }
+  return out;
+}
+const allMonths = generateAllMonths();
 
 // ── DEFAULT DATA ──────────────
 const DEFAULT_MONTH_TOTALS = {};
