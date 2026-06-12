@@ -286,7 +286,7 @@ TRANSPORT"></textarea>
 
     <div class="ew-grid" style="margin-bottom:12px">
       <div class="fg"><label>Month *</label><select id="e_month"></select></div>
-      <div class="fg"><label>Date</label><input type="date" id="e_date"></div>
+      <div class="fg"><label>Date</label><input type="date" id="e_date" onchange="syncMonthFromDate()"></div>
     </div>
     <div class="fg" style="margin-bottom:14px">
       <label>Location / Event Venue</label>
@@ -988,6 +988,17 @@ function openAddModal(){
   document.getElementById('e_month').value=allMonths[0].key;
   addRow();
   document.getElementById('addModal').classList.add('open');
+}
+function syncMonthFromDate(){
+  const dateVal = document.getElementById('e_date').value;
+  if(!dateVal) return;
+  const d = new Date(dateVal + 'T00:00:00');
+  const y = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const key = `${y}-${mm}`;
+  const sel = document.getElementById('e_month');
+  const opt = Array.from(sel.options).find(o => o.value === key);
+  if(opt) sel.value = key;
 }
 function clearParser(){
   document.getElementById('whatsappText').value='';
